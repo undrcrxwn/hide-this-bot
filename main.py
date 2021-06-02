@@ -100,6 +100,15 @@ def query_hide(inline_query):
     except Exception as e:
         logger.error(e)
 
+@bot.message_handler(commands=['start'])
+def start_command(message):
+    bot.send_message(message.chat.id,
+                     '[' + bot.get_me().full_name.replace('_', '\_') + '](t.me/' + bot.get_me().username + ') '
+                     'is an *inline* bot which means it can only be used by typing the following pattern into '
+                     'the text input field (works in any chat): @​' + bot.get_me().username.replace('_', '\_') +
+                     ' sample text @user',
+                     parse_mode='markdown')
+
 def main_loop():
     bot.polling(True)
     while True:
