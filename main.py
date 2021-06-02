@@ -105,8 +105,9 @@ def start_command(message):
     bot.send_message(message.chat.id,
                      '[' + bot.get_me().full_name.replace('_', '\_') + '](t.me/' + bot.get_me().username + ') '
                      'is an *inline* bot which means it can only be used by typing the following pattern into '
-                     'the text input field (works in any chat): @​' + bot.get_me().username.replace('_', '\_') +
-                     ' sample text @user',
+                     'the text input field (works in any chat): *@​' + bot.get_me().username +
+                     ' sample text @user*',
+                     disable_web_page_preview=True,
                      parse_mode='markdown')
 
 def main_loop():
