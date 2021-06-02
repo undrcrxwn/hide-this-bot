@@ -8,3 +8,5 @@ requests==2.25.1
 six==1.16.0
 urllib3==1.26.5
 virtualenv==20.4.7
+loguru==0.5.3
+pyTelegramBotAPI==3.7.9
