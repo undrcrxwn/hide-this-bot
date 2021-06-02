@@ -6,11 +6,12 @@ import sqlite3
 from sqlite3 import Error
 import telebot
 from telebot import types
+from hidethisbot.config import *
 
-bot = telebot.TeleBot(os.environ['API_TOKEN'])
-connection = sqlite3.connect(os.environ['DB_PATH'], check_same_thread=False)
+bot = telebot.TeleBot(API_TOKEN)
+connection = sqlite3.connect(DB_PATH, check_same_thread=False)
 cursor = connection.cursor()
-logger.add(os.environ['LOG_PATH'], level='DEBUG')
+logger.add(LOG_PATH, level='DEBUG')
 
 def execute_query(query):
     try:
