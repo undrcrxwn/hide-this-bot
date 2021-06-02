@@ -35,16 +35,17 @@ def callback_inline(call):
             post = execute_read_query('SELECT * FROM posts WHERE id = ' + id)[0]
         except Exception as e:
             logger.error(e)
-            logger.info('#' + id + ' cannot be reached')
+            logger.info('#' + id + ' cannot be reached by @' + call.from_user.username)
             bot.answer_callback_query(call.id, text='This content is no longer accessible.', show_alert=True)
             return
         (_, author, body, scope, _) = post
 
+        target = call.from_user.username.lower()
         access_granted = False
         if mode == 'for':
-            access_granted = call.from_user.username == author or call.from_user.username in scope.split(' ')
+            access_granted = target == author or target in scope.split(' ')
         elif mode == 'except':
-            access_granted = call.from_user.username not in scope.split(' ')
+            access_granted = target not in scope.split(' ')
 
         if access_granted:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
@@ -60,21 +61,22 @@ def query_hide(inline_query):
     try:
         r = re.compile(r'( @.+)+$')
         body = r.sub('', inline_query.query)
-        targets = list(dict.fromkeys(inline_query.query[len(body) + 1:].split(' ')))
-        if '' in targets: targets.remove('')
+        scope = list(dict.fromkeys(inline_query.query[len(body) + 1:].lower().split(' ')))
+        if '' in scope:
+            scope.remove('')
 
         execute_query("""
         INSERT INTO posts (author, content, scope)
-        VALUES ('""" + inline_query.from_user.username + """', '""" + body + """', '""" + ' '.join(targets).replace('@', '') + """');
+        VALUES ('""" + inline_query.from_user.username.lower() + """', '""" + body + """', '""" + ' '.join(scope).replace('@', '') + """');
         """)
         row_id = str(cursor.lastrowid)
         logger.info('#' + row_id + ' has been created by @' + inline_query.from_user.username)
 
-        formatted_scope = ', '.join(targets[:-1])
-        if len(targets) > 1:
-            formatted_scope += ' and ' + targets[-1]
+        formatted_scope = ', '.join(scope[:-1])
+        if len(scope) > 1:
+            formatted_scope += ' and ' + scope[-1]
         else:
-            formatted_scope = targets[0]
+            formatted_scope = scope[0]
 
         keyboard = types.InlineKeyboardMarkup()
         button = types.InlineKeyboardButton("View", callback_data=row_id + ' for')
