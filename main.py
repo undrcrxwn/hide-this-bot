@@ -1,6 +1,8 @@
+import asyncio
 import os
 import time
 import re
+from threading import Thread
 from loguru import logger
 import sqlite3
 from sqlite3 import Error
@@ -11,6 +13,12 @@ from random import *
 bot = telebot.TeleBot(os.environ.get('API_TOKEN'))
 connection = sqlite3.connect(os.environ.get('DB_PATH'), check_same_thread=False)
 logger.add(os.environ.get('LOG_PATH'), level='DEBUG')
+ignored_chat_ids = set()
+
+def ignore(chat_id, timeout):
+    ignored_chat_ids.add(chat_id)
+    time.sleep(timeout)
+    ignored_chat_ids.remove(chat_id)
 
 def execute_query(query):
     try:
@@ -35,8 +43,8 @@ def callback_inline(call):
         target = call.from_user.username
         if not target:
             bot.answer_callback_query(call.id,
-                                      text='To view hidden content your account needs to have a username '
-                                           '(e. g. @my_acc or @durov).\n\n'
+                                      text='To view hidden content your account needs to have a username ' +
+                                           '(e. g. @my_acc or @durov).\n\n' +
                                            'To set up your personal username go to Settings ➩ Username.',
                                       show_alert=True)
             return
@@ -72,13 +80,13 @@ def query_hide(inline_query):
         target = inline_query.from_user.username
         if not target:
             r = types.InlineQueryResultArticle('1', 'Sorry, we cannot process your request',
-                                               types.InputTextMessageContent('To use [' + bot.get_me().full_name + ']'
-                                                           '(t.me/' + bot.get_me().username + ') your account needs '
-                                                           'to have a username (e. g. @​my\_acc or @​durov).\n\n'
+                                               types.InputTextMessageContent('To use [' + bot.get_me().full_name + ']' +
+                                                           '(t.me/' + bot.get_me().username + ') your account needs ' +
+                                                           'to have a username (e. g. @​my_acc or @​durov).\n\n' +
                                                            'To set up your personal username go to *Settings ➩ Username*.',
                                                            disable_web_page_preview=True,
                                                            parse_mode='markdown'),
-                                               description='To use ' + bot.get_me().full_name + ' your account needs '
+                                               description='To use ' + bot.get_me().full_name + ' your account needs ' +
                                                            'to have a username (e. g. @my_acc or @durov).',
                                                thumb_url='https://i.imgur.com/xblMvAx.png')
             bot.answer_inline_query(inline_query.id, [r])
@@ -125,29 +133,18 @@ def query_hide(inline_query):
     except Exception as e:
         logger.error(e)
 
-@bot.message_handler(commands=['start', 'help'])
-def start_command(message):
-    try:
-        bot.send_message(message.chat.id,
-                         '[' + bot.get_me().full_name + '](t.me/' + bot.get_me().username + ') '
-                         'is an *inline* bot which means it can only be used by typing the following pattern into '
-                         'the text input field (works in any chat): *@​' + bot.get_me().username +
-                         ' sample text @user*\n\n'
-                         'If you\'ve got any questions or you want to report a bug, don\'t hesitate to [contact me]'
-                         '(t.me/undrcrxwn) (both 🇷🇺 and 🇺🇸).',
-                         disable_web_page_preview=True,
-                         parse_mode='markdown')
-    except Exception as e:
-        logger.error(e)
-
 @bot.message_handler()
-def redirect_message(message):
+def send_info(message):
     try:
-        logger.info('forwarding message from @' + message.from_user.username)
-        bot.forward_message(os.environ.get('SUPPORT_CHAT_ID'),
-                            message.chat.id,
-                            message.id,
-                            disable_notification=True)
+        if message.chat.id in ignored_chat_ids: return
+        Thread(target=ignore, args=(message.chat.id, 5)).start()
+
+        bot.send_message(message.chat.id,
+                         '[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en)',
+                         parse_mode='markdown')
+        bot.send_message(message.chat.id,
+                         '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru)',
+                         parse_mode='markdown')
     except Exception as e:
         logger.error(e)
 
