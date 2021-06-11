@@ -6,6 +6,7 @@
 - `API_TOKEN` – Telegram API bot token
 - `DB_PATH` – path to the database
 - `LOG_PATH` – path to the log-file
+- `DATABASE_URL` – URL of the PostgreSQL database
 
 
 #### Available modes:
