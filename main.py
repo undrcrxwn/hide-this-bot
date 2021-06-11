@@ -61,7 +61,7 @@ def callback_inline(call):
             logger.info('#' + id + ' cannot be reached by @' + call.from_user.username)
             bot.answer_callback_query(call.id, text='This content is no longer accessible.', show_alert=True)
             return
-        (_, author, body, scope, _) = post
+        (_, author, body, scope) = post
 
         access_granted = False
         if mode == 'for':
