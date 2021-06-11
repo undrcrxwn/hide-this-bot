@@ -4,14 +4,14 @@ import time
 import re
 from threading import Thread
 from loguru import logger
-import sqlite3
-from sqlite3 import Error
+import psycopg2
+from psycopg2 import OperationalError
 import telebot
 from telebot import types
 from random import *
 
 bot = telebot.TeleBot(os.environ.get('API_TOKEN'))
-connection = sqlite3.connect(os.environ.get('DB_PATH'), check_same_thread=False)
+connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
 logger.add(os.environ.get('LOG_PATH'), level='DEBUG')
 ignored_chat_ids = set()
 
@@ -25,7 +25,9 @@ def execute_query(query):
         cursor = connection.cursor()
         cursor.execute(query)
         connection.commit()
-    except Error as e:
+    except OperationalError as e:
+        logger.error(f'The error "{e}" occurred')
+    except Exception as e:
         logger.error(e)
 
 def execute_read_query(query):
@@ -34,7 +36,9 @@ def execute_read_query(query):
         cursor.execute(query)
         result = cursor.fetchall()
         return result
-    except Error as e:
+    except OperationalError as e:
+        logger.error(f'The error "{e}" occurred')
+    except Exception as e:
         logger.error(e)
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -82,8 +86,8 @@ def query_hide(inline_query):
             r = types.InlineQueryResultArticle('1', 'Sorry, we cannot process your request',
                                                types.InputTextMessageContent('To use [' + bot.get_me().full_name + ']' +
                                                            '(t.me/' + bot.get_me().username + ') your account needs ' +
-                                                           'to have a username (e. g. @​my_acc or @​durov).\n\n' +
-                                                           'To set up your personal username go to *Settings ➩ Username*.',
+                                                           'to have a username (e. g. @​my\_acc or @​durov).\n\n' +
+                                                           'To set up your personal username visit *Settings ➩ Username*.',
                                                            disable_web_page_preview=True,
                                                            parse_mode='markdown'),
                                                description='To use ' + bot.get_me().full_name + ' your account needs ' +
@@ -157,11 +161,10 @@ if __name__ == '__main__':
     try:
         execute_query("""
             CREATE TABLE IF NOT EXISTS posts (
-              id INTEGER PRIMARY KEY AUTOINCREMENT,
+              id INTEGER PRIMARY KEY,
               author TEXT,
               content TEXT,
-              scope TEXT,
-              mode INTEGER);
+              scope TEXT);
               """)
 
         logger.info('Starting main_loop...')
