@@ -1,4 +1,3 @@
-import asyncio
 import os
 import time
 import re
@@ -6,12 +5,12 @@ from threading import Thread
 from loguru import logger
 import psycopg2
 from psycopg2 import OperationalError
-import telebot
-from telebot import types
 from random import *
+from hidethisbot.resources import *
 
 bot = telebot.TeleBot(os.environ.get('API_TOKEN'))
 connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
+rsc = Resources(bot)
 logger.add(os.environ.get('LOG_PATH'), level='DEBUG')
 ignored_chat_ids = set()
 
@@ -46,11 +45,7 @@ def callback_inline(call):
     try:
         target = call.from_user.username
         if not target:
-            bot.answer_callback_query(call.id,
-                                      text='To view hidden content your account needs to have a username ' +
-                                           '(e. g. @my_acc or @durov).\n\n' +
-                                           'To set up your personal username go to Settings ➩ Username.',
-                                      show_alert=True)
+            bot.answer_callback_query(call.id, rsc.callback_responses.username_needed_to_view(), True)
             return
 
         (id, mode) = str(call.data).split(' ')
@@ -59,10 +54,10 @@ def callback_inline(call):
         except Exception as e:
             logger.error(e)
             logger.info('#' + id + ' cannot be reached by @' + call.from_user.username)
-            bot.answer_callback_query(call.id, text='This content is no longer accessible.', show_alert=True)
+            bot.answer_callback_query(call.id, text=rsc.callback_responses.not_accessible(), show_alert=True)
             return
-        (_, author, body, scope) = post
 
+        (_, author, body, scope) = post
         access_granted = False
         if mode == 'for':
             access_granted = target.lower() == author or target.lower() in scope.split(' ')
@@ -71,10 +66,10 @@ def callback_inline(call):
 
         if access_granted:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
-            bot.answer_callback_query(call.id, text=body, show_alert=True)
+            bot.answer_callback_query(call.id, body, True)
         else:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access denied')
-            bot.answer_callback_query(call.id, text='You are not allowed to view this content.', show_alert=True)
+            bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
     except Exception as e:
         logger.error(e)
 
@@ -83,17 +78,7 @@ def query_hide(inline_query):
     try:
         target = inline_query.from_user.username
         if not target:
-            r = types.InlineQueryResultArticle('1', 'Sorry, we cannot process your request',
-                                               types.InputTextMessageContent('To use [' + bot.get_me().full_name + ']' +
-                                                           '(t.me/' + bot.get_me().username + ') your account needs ' +
-                                                           'to have a username (e. g. @​my\_acc or @​durov).\n\n' +
-                                                           'To set up your personal username visit *Settings ➩ Username*.',
-                                                           disable_web_page_preview=True,
-                                                           parse_mode='markdown'),
-                                               description='To use ' + bot.get_me().full_name + ' your account needs ' +
-                                                           'to have a username (e. g. @my_acc or @durov).',
-                                               thumb_url='https://i.imgur.com/xblMvAx.png')
-            bot.answer_inline_query(inline_query.id, [r])
+            bot.answer_inline_query(inline_query.id, [rsc.query_results.username_needed_to_use()])
             return
 
         r = re.compile(r'( @.+)+$')
@@ -115,25 +100,8 @@ def query_hide(inline_query):
         else:
             formatted_scope = scope[0]
 
-        keyboard = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("View", callback_data=row_id + ' for')
-        keyboard.add(button)
-        r1 = types.InlineQueryResultArticle('1', 'For ' + formatted_scope,
-                                            types.InputTextMessageContent('Private message for ' + formatted_scope + '.',
-                                                                          disable_web_page_preview=True),
-                                            keyboard,
-                                            description=body,
-                                            thumb_url='https://i.imgur.com/hHIkDSu.png')
-        keyboard = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("View", callback_data=row_id + ' except')
-        keyboard.add(button)
-        r2 = types.InlineQueryResultArticle('2', 'Except ' + formatted_scope,
-                                            types.InputTextMessageContent('Private message for everyone except ' + formatted_scope + '.',
-                                                                          disable_web_page_preview=True),
-                                            keyboard,
-                                            description=body,
-                                            thumb_url='https://i.imgur.com/S6OZMHd.png')
-        bot.answer_inline_query(inline_query.id, [r1, r2])
+        bot.answer_inline_query(inline_query.id, [rsc.query_results.mode_for(row_id, body, formatted_scope),
+                                                  rsc.query_results.mode_except(row_id, body, formatted_scope)])
     except Exception as e:
         logger.error(e)
 
@@ -143,12 +111,8 @@ def send_info(message):
         if message.chat.id in ignored_chat_ids: return
         Thread(target=ignore, args=(message.chat.id, 5)).start()
 
-        bot.send_message(message.chat.id,
-                         '[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en)',
-                         parse_mode='markdown')
-        bot.send_message(message.chat.id,
-                         '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru)',
-                         parse_mode='markdown')
+        bot.send_message(message.chat.id, rsc.messages.info_en(), parse_mode='markdown')
+        bot.send_message(message.chat.id, rsc.messages.info_ru(), parse_mode='markdown')
     except Exception as e:
         logger.error(e)
 
