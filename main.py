@@ -6,7 +6,7 @@ from loguru import logger
 import psycopg2
 from psycopg2 import OperationalError
 from random import *
-from hidethisbot.resources import *
+from resources import *
 
 bot = telebot.TeleBot(os.environ.get('API_TOKEN'))
 connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
