@@ -73,7 +73,7 @@ def callback_inline(call):
     except Exception as e:
         logger.error(e)
 
-@bot.inline_handler(lambda query: re.match(r'^.+ (@.+)$', query.query))
+@bot.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query))
 def query_hide(inline_query):
     try:
         target = inline_query.from_user.username
@@ -81,7 +81,7 @@ def query_hide(inline_query):
             bot.answer_inline_query(inline_query.id, [rsc.query_results.username_needed_to_use()])
             return
 
-        r = re.compile(r'( @.+)+$')
+        r = re.compile(r'( @\w+)+$')
         body = r.sub('', inline_query.query)
         scope = list(dict.fromkeys(inline_query.query[len(body) + 1:].split(' ')))
         if '' in scope:
