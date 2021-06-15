@@ -1,6 +1,6 @@
 import os
 import time
-from datetime import *
+from datetime import datetime
 import re
 from threading import Thread
 from loguru import logger
@@ -67,11 +67,11 @@ def callback_inline(call):
 
         if access_granted:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
-            bot.answer_callback_query(call.id, str(body)
+            bot.answer_callback_query(call.id, body
                                       .replace('{username}', '@' + call.from_user.username)
                                       .replace('{name}', call.from_user.full_name)
-                                      .replace('{uid}', str(call.from_user.id))
-                                      .replace('{pid}', id)
+                                      .replace('{uid}', 'id' + str(call.from_user.id))
+                                      .replace('{pid}', '#' + id)
                                       .replace('{time}', str(datetime.now())),
                                       True)
         else:
