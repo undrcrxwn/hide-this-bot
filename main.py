@@ -1,5 +1,6 @@
 import os
 import time
+from datetime import *
 import re
 from threading import Thread
 from loguru import logger
@@ -66,14 +67,20 @@ def callback_inline(call):
 
         if access_granted:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
-            bot.answer_callback_query(call.id, body, True)
+            bot.answer_callback_query(call.id, str(body)
+                                      .replace('{username}', '@' + call.from_user.username)
+                                      .replace('{name}', call.from_user.full_name)
+                                      .replace('{uid}', str(call.from_user.id))
+                                      .replace('{pid}', id)
+                                      .replace('{time}', str(datetime.now())),
+                                      True)
         else:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access denied')
             bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
     except Exception as e:
         logger.error(e)
 
-@bot.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query))
+@bot.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query.replace('\n', ' ')))
 def query_hide(inline_query):
     try:
         target = inline_query.from_user.username
