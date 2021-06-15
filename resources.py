@@ -2,11 +2,10 @@ import telebot
 from telebot import types
 
 class Messages:
-    def info_en(self):
-        return '[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en)'
-
-    def info_ru(self):
-        return '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru)'
+    def info(self):
+        return ('[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en) English\n'
+                '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru) Русский\n'
+                '[🇵🇱 teletype/instructions](https://teletype.in/@kravcha/4obcvT72_pa) Polski')
 
 class QueryResults:
     def __init__(self, bot: telebot.TeleBot):

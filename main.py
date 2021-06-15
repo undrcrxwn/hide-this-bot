@@ -111,8 +111,7 @@ def send_info(message):
         if message.chat.id in ignored_chat_ids: return
         Thread(target=ignore, args=(message.chat.id, 5)).start()
 
-        bot.send_message(message.chat.id, rsc.messages.info_en(), parse_mode='markdown')
-        bot.send_message(message.chat.id, rsc.messages.info_ru(), parse_mode='markdown')
+        bot.send_message(message.chat.id, rsc.messages.info(), parse_mode='markdown', disable_web_page_preview=True)
     except Exception as e:
         logger.error(e)
 
