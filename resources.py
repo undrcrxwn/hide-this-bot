@@ -5,6 +5,7 @@ class Messages:
     def info(self):
         return ('[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en) English\n'
                 '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru) Русский\n'
+                '[🇺🇦 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ua) Українська\n'
                 '[🇵🇱 teletype/instructions](https://teletype.in/@kravcha/4obcvT72_pa) Polski')
 
 class QueryResults:
