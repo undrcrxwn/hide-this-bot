@@ -6,7 +6,8 @@ class Messages:
         return ('[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en) English\n'
                 '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru) Русский\n'
                 '[🇺🇦 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ua) Українська\n'
-                '[🇵🇱 teletype/instructions](https://teletype.in/@kravcha/4obcvT72_pa) Polski')
+                '[🇵🇱 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_pl) Polski\n'
+                '[🇮🇹 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_it) Italiano')
 
 class QueryResults:
     def __init__(self, bot: telebot.TeleBot):
