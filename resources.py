@@ -28,7 +28,7 @@ class QueryResults:
 
     def mode_for(self, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("View", callback_data=post_id + ' for')
+        button = types.InlineKeyboardButton("View", callback_data=str(post_id) + ' for')
         keyboard.add(button)
         return types.InlineQueryResultArticle('1', 'For ' + scope_string,
                types.InputTextMessageContent(
@@ -40,7 +40,7 @@ class QueryResults:
 
     def mode_except(self, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("View", callback_data=post_id + ' except')
+        button = types.InlineKeyboardButton("View", callback_data=str(post_id) + ' except')
         keyboard.add(button)
         return types.InlineQueryResultArticle('2', 'Except ' + scope_string,
                types.InputTextMessageContent(

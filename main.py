@@ -20,10 +20,10 @@ def ignore(chat_id, timeout):
     time.sleep(timeout)
     ignored_chat_ids.remove(chat_id)
 
-def execute_query(query):
+def execute_query(query, data = None):
     try:
         cursor = connection.cursor()
-        cursor.execute(query)
+        cursor.execute(query, data)
         connection.commit()
     except OperationalError as e:
         logger.error(f'The error "{e}" occurred')
@@ -41,6 +41,14 @@ def execute_read_query(query):
     except Exception as e:
         logger.error(e)
 
+def get_post(id: str):
+    return execute_read_query('SELECT * FROM posts WHERE id = %s' % id)[0]
+
+def insert_post(id: int, author: str, content: str, scope: []):
+    execute_query('INSERT INTO posts (id, author, content, scope) '
+                  'VALUES (%s, %s, %s, %s);',
+                  (id, author.lower(), content, ' '.join(scope).lower().replace('@', ''),))
+
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     try:
@@ -51,7 +59,7 @@ def callback_inline(call):
 
         (id, mode) = str(call.data).split(' ')
         try:
-            post = execute_read_query('SELECT * FROM posts WHERE id = ' + id)[0]
+            post = get_post(id)
         except Exception as e:
             logger.error(e)
             logger.info('#' + id + ' cannot be reached by @' + call.from_user.username)
@@ -94,12 +102,9 @@ def query_hide(inline_query):
         if '' in scope:
             scope.remove('')
 
-        row_id = str(randint(0, 100000000))
-        execute_query("""
-        INSERT INTO posts (id, author, content, scope)
-        VALUES (""" + row_id + ", '" + target.lower() + "', '" +
-                body + "', '" + ' '.join(scope).lower().replace('@', '') + "');")
-        logger.info('#' + row_id + ' has been created by @' + target)
+        row_id = randint(0, 100000000)
+        insert_post(row_id, target, body, scope)
+        logger.info('#' + str(row_id) + ' has been created by @' + target)
 
         formatted_scope = ', '.join(scope[:-1])
         if len(scope) > 1:
@@ -131,11 +136,11 @@ if __name__ == '__main__':
     try:
         execute_query("""
             CREATE TABLE IF NOT EXISTS posts (
-              id INTEGER PRIMARY KEY,
-              author TEXT,
-              content TEXT,
-              scope TEXT);
-              """)
+                id INTEGER PRIMARY KEY,
+                author TEXT,
+                content TEXT,
+                scope TEXT);
+                """)
 
         logger.info('Starting main_loop...')
         main_loop()
