@@ -3,11 +3,15 @@ from telebot import types
 
 class Messages:
     def info(self):
-        return ('[🇺🇸 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_en) English\n'
-                '[🇷🇺 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ru) Русский\n'
-                '[🇺🇦 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_ua) Українська\n'
-                '[🇵🇱 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_pl) Polski\n'
-                '[🇮🇹 teletype/instructions](https://teletype.in/@undrcrxwn/hidethisbot_it) Italiano')
+        return ('If you still have questions after reading the article, '
+                'feel free to leave them here for the developer to answer them.')
+
+    def info_keyboard(self):
+        return types.InlineKeyboardMarkup([[types.InlineKeyboardButton('🇺🇸 English',    url='https://teletype.in/@undrcrxwn/hidethisbot_en')],
+                                           [types.InlineKeyboardButton('🇷🇺 Русский',    url='https://teletype.in/@undrcrxwn/hidethisbot_ru'),
+                                            types.InlineKeyboardButton('🇺🇦 Українська', url='https://teletype.in/@undrcrxwn/hidethisbot_ua')],
+                                           [types.InlineKeyboardButton('🇵🇱 Polski',     url='https://teletype.in/@undrcrxwn/hidethisbot_pl'),
+                                            types.InlineKeyboardButton('🇮🇹 Italiano',   url='https://teletype.in/@undrcrxwn/hidethisbot_it')]])
 
 class QueryResults:
     def __init__(self, bot: telebot.TeleBot):
@@ -40,8 +44,7 @@ class QueryResults:
 
     def mode_except(self, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup()
-        button = types.InlineKeyboardButton("View", callback_data=str(post_id) + ' except')
-        keyboard.add(button)
+        keyboard.add(types.InlineKeyboardButton("View", callback_data=str(post_id) + ' except'))
         return types.InlineQueryResultArticle('2', 'Except ' + scope_string,
                types.InputTextMessageContent(
                              'Private message for everyone except ' + scope_string + '.',

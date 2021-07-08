@@ -117,13 +117,17 @@ def query_hide(inline_query):
     except Exception as e:
         logger.error(e)
 
-@bot.message_handler()
+@bot.message_handler(commands=['start', 'help', 'info'])
 def send_info(message):
     try:
         if message.chat.id in ignored_chat_ids: return
         Thread(target=ignore, args=(message.chat.id, 5)).start()
 
-        bot.send_message(message.chat.id, rsc.messages.info(), parse_mode='markdown', disable_web_page_preview=True)
+        bot.send_message(message.chat.id,
+                         rsc.messages.info(),
+                         reply_markup=rsc.messages.info_keyboard(),
+                         parse_mode='markdown',
+                         disable_web_page_preview=True)
     except Exception as e:
         logger.error(e)
 
