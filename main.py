@@ -5,14 +5,15 @@ import re
 from threading import Thread
 from loguru import logger
 import psycopg2
-from psycopg2 import OperationalError
 from random import *
 from resources import *
+from aiogram import Bot, Dispatcher, executor, types
 
-bot = telebot.TeleBot(os.environ.get('API_TOKEN'))
-connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode='require')
-rsc = Resources(bot)
-logger.add(os.environ.get('LOG_PATH'), level='DEBUG')
+connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode = 'require')
+bot = Bot(token = os.environ['API_TOKEN'])
+dp = Dispatcher(bot)
+rsc = Resources()
+logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
 ignored_chat_ids = set()
 
 def ignore(chat_id, timeout):
@@ -25,10 +26,10 @@ def execute_query(query, data = None):
         cursor = connection.cursor()
         cursor.execute(query, data)
         connection.commit()
-    except OperationalError as e:
-        logger.error(f'The error "{e}" occurred')
     except Exception as e:
         logger.error(e)
+        connection.rollback()
+        logger.info('transaction rollback: "' + query + '"')
 
 def execute_read_query(query):
     try:
@@ -36,25 +37,23 @@ def execute_read_query(query):
         cursor.execute(query)
         result = cursor.fetchall()
         return result
-    except OperationalError as e:
-        logger.error(f'The error "{e}" occurred')
     except Exception as e:
         logger.error(e)
 
-def get_post(id: str):
-    return execute_read_query('SELECT * FROM posts WHERE id = %s' % id)[0]
+def get_post(id: int):
+    return execute_read_query('SELECT * FROM posts WHERE id = %s' % str(id))[0]
 
 def insert_post(id: int, author: str, content: str, scope: []):
     execute_query('INSERT INTO posts (id, author, content, scope) '
                   'VALUES (%s, %s, %s, %s);',
                   (id, author.lower(), content, ' '.join(scope).lower().replace('@', ''),))
 
-@bot.callback_query_handler(func=lambda call: True)
-def callback_inline(call):
+@dp.callback_query_handler()
+async def callback_inline(call):
     try:
         target = call.from_user.username
         if not target:
-            bot.answer_callback_query(call.id, rsc.callback_responses.username_needed_to_view(), True)
+            await bot.answer_callback_query(call.id, rsc.callback_responses.username_needed_to_view(), True)
             return
 
         (id, mode) = str(call.data).split(' ')
@@ -62,8 +61,8 @@ def callback_inline(call):
             post = get_post(id)
         except Exception as e:
             logger.error(e)
-            logger.info('#' + id + ' cannot be reached by @' + call.from_user.username)
-            bot.answer_callback_query(call.id, text=rsc.callback_responses.not_accessible(), show_alert=True)
+            logger.warning('#' + id + ' cannot be reached by @' + call.from_user.username)
+            await bot.answer_callback_query(call.id, text = rsc.callback_responses.not_accessible(), show_alert = True)
             return
 
         (_, author, body, scope) = post
@@ -75,25 +74,25 @@ def callback_inline(call):
 
         if access_granted:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
-            bot.answer_callback_query(call.id, body
-                                      .replace('{username}', '@' + call.from_user.username)
-                                      .replace('{name}', call.from_user.full_name)
-                                      .replace('{uid}', 'id' + str(call.from_user.id))
-                                      .replace('{pid}', '#' + id)
-                                      .replace('{time}', str(datetime.now())),
-                                      True)
+            await bot.answer_callback_query(call.id, body
+                                            .replace('{username}', '@' + call.from_user.username)
+                                            .replace('{name}', call.from_user.full_name)
+                                            .replace('{uid}', 'id' + str(call.from_user.id))
+                                            .replace('{pid}', '#' + id)
+                                            .replace('{time}', str(datetime.now())),
+                                            True)
         else:
             logger.info('#' + id + ': @' + call.from_user.username + ' - access denied')
-            bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
+            await bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
     except Exception as e:
         logger.error(e)
 
-@bot.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query.replace('\n', ' ')))
-def query_hide(inline_query):
+@dp.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query.replace('\n', ' ')))
+async def query_hide(inline_query: types.InlineQuery):
     try:
         target = inline_query.from_user.username
         if not target:
-            bot.answer_inline_query(inline_query.id, [rsc.query_results.username_needed_to_use()])
+            await bot.answer_inline_query(inline_query.id, [rsc.query_results.username_needed_to_use(await bot.get_me())])
             return
 
         r = re.compile(r'( @\w+)+$')
@@ -104,7 +103,10 @@ def query_hide(inline_query):
 
         row_id = randint(0, 100000000)
         insert_post(row_id, target, body, scope)
-        logger.info('#' + str(row_id) + ' has been created by @' + target)
+        if get_post(row_id):
+            logger.info('#' + str(row_id) + ' has been inserted by @' + target)
+        else:
+            logger.warning('#' + str(row_id) + ' cannot be inserted by @' + target)
 
         formatted_scope = ', '.join(scope[:-1])
         if len(scope) > 1:
@@ -112,29 +114,29 @@ def query_hide(inline_query):
         else:
             formatted_scope = scope[0]
 
-        bot.answer_inline_query(inline_query.id, [rsc.query_results.mode_for(row_id, body, formatted_scope),
-                                                  rsc.query_results.mode_except(row_id, body, formatted_scope)])
+        await bot.answer_inline_query(inline_query.id,
+           [rsc.query_results.mode_for(row_id, body, formatted_scope),
+            rsc.query_results.mode_except(row_id, body, formatted_scope)])
     except Exception as e:
         logger.error(e)
 
-@bot.message_handler(commands=['start', 'help', 'info'])
-def send_info(message):
+@dp.inline_handler()
+async def query_hide(inline_query: types.InlineQuery):
+    await bot.answer_inline_query(inline_query.id, [],
+                                  switch_pm_text = 'How to use this bot?',
+                                  switch_pm_parameter = 'start')
+
+@dp.message_handler(commands = ['start', 'help', 'info'])
+async def send_info(message):
     try:
         if message.chat.id in ignored_chat_ids: return
-        Thread(target=ignore, args=(message.chat.id, 5)).start()
-
-        bot.send_message(message.chat.id,
-                         rsc.messages.info(),
-                         reply_markup=rsc.messages.info_keyboard(),
-                         parse_mode='markdown',
-                         disable_web_page_preview=True)
+        Thread(target = ignore, args = (message.chat.id, 1)).start()
+        await bot.send_message(message.chat.id,
+                               text = rsc.messages.info(),
+                               reply_markup = rsc.messages.info_keyboard(),
+                               disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)
-
-def main_loop():
-    bot.polling(True)
-    while True:
-        time.sleep(3)
 
 if __name__ == '__main__':
     try:
@@ -146,7 +148,7 @@ if __name__ == '__main__':
                 scope TEXT);
                 """)
 
-        logger.info('Starting main_loop...')
-        main_loop()
+        logger.info('Start polling...')
+        executor.start_polling(dp, skip_updates = True)
     except Exception as e:
         logger.error(e)
