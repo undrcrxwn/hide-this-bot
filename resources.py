@@ -9,13 +9,13 @@ class Messages:
                 '⚙ Support: @undrcrxwn')
 
     def info_keyboard(self):
-        return types.InlineKeyboardMarkup(inline_keyboard =
-             [[types.InlineKeyboardButton('🇺🇸 English',    url = 'https://teletype.in/@undrcrxwn/hidethisbot_en'),
-               types.InlineKeyboardButton('🇵🇱 Polski',     url = 'https://teletype.in/@undrcrxwn/hidethisbot_pl')],
-              [types.InlineKeyboardButton('🇷🇺 Русский',    url = 'https://teletype.in/@undrcrxwn/hidethisbot_ru'),
-               types.InlineKeyboardButton('🇺🇦 Українська', url = 'https://teletype.in/@undrcrxwn/hidethisbot_ua')],
-              [types.InlineKeyboardButton('🇮🇹 Italiano',   url = 'https://teletype.in/@undrcrxwn/hidethisbot_it'),
-               types.InlineKeyboardButton('🇨🇿 Čeština',    url = 'https://teletype.in/@undrcrxwn/hidethisbot_cz')]])
+        return types.InlineKeyboardMarkup(inline_keyboard=
+             [[types.InlineKeyboardButton('🇺🇸 English',    url='https://teletype.in/@undrcrxwn/hidethisbot_en'),
+               types.InlineKeyboardButton('🇵🇱 Polski',     url='https://teletype.in/@undrcrxwn/hidethisbot_pl')],
+              [types.InlineKeyboardButton('🇷🇺 Русский',    url='https://teletype.in/@undrcrxwn/hidethisbot_ru'),
+               types.InlineKeyboardButton('🇺🇦 Українська', url='https://teletype.in/@undrcrxwn/hidethisbot_ua')],
+              [types.InlineKeyboardButton('🇮🇹 Italiano',   url='https://teletype.in/@undrcrxwn/hidethisbot_it'),
+               types.InlineKeyboardButton('🇨🇿 Čeština',    url='https://teletype.in/@undrcrxwn/hidethisbot_cz')]])
 
 class QueryResults:
     def username_needed_to_use(self, bot_user):

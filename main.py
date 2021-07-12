@@ -40,49 +40,50 @@ def execute_read_query(query):
     except Exception as e:
         logger.error(e)
 
+def get_formatted_username_or_id(user: types.User):
+    return 'id' + str(user.id) if user.username is None else '@' + user.username
+
 def get_post(id: int):
     return execute_read_query('SELECT * FROM posts WHERE id = %s' % str(id))[0]
 
-def insert_post(id: int, author: str, content: str, scope: []):
-    execute_query('INSERT INTO posts (id, author, content, scope) '
-                  'VALUES (%s, %s, %s, %s);',
-                  (id, author.lower(), content, ' '.join(scope).lower().replace('@', ''),))
+def insert_post(id: int, author: int, content: str, scope: set):
+    execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
+                  'VALUES (%s, %s, %s, %s, NOW());',
+                  (id, author, content, ' '.join(scope).replace('@', '').lower()))
 
 @dp.callback_query_handler()
 async def callback_inline(call):
     try:
-        target = call.from_user.username
-        if not target:
-            await bot.answer_callback_query(call.id, rsc.callback_responses.username_needed_to_view(), True)
-            return
-
+        target = call.from_user
         (id, mode) = str(call.data).split(' ')
         try:
             post = get_post(id)
         except Exception as e:
             logger.error(e)
-            logger.warning('#' + id + ' cannot be reached by @' + call.from_user.username)
+            logger.warning('#' + id + ' cannot be reached by ' + get_formatted_username_or_id(target))
             await bot.answer_callback_query(call.id, text = rsc.callback_responses.not_accessible(), show_alert = True)
             return
 
-        (_, author, body, scope) = post
+        (_, author, body, scope, _) = post
         access_granted = False
-        if mode == 'for':
-            access_granted = target.lower() == author or target.lower() in scope.split(' ')
+        if not target.username:
+            access_granted = mode == 'except' or target.id == author
+        elif mode == 'for':
+            access_granted = target.id == author or target.username.lower() in scope.split(' ')
         elif mode == 'except':
-            access_granted = target.lower() not in scope.split(' ')
+            access_granted = target.username.lower() not in scope.split(' ')
 
         if access_granted:
-            logger.info('#' + id + ': @' + call.from_user.username + ' - access granted')
+            logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access granted')
             await bot.answer_callback_query(call.id, body
-                                            .replace('{username}', '@' + call.from_user.username)
-                                            .replace('{name}', call.from_user.full_name)
-                                            .replace('{uid}', 'id' + str(call.from_user.id))
+                                            .replace('{username}', get_formatted_username_or_id(target))
+                                            .replace('{name}', target.full_name)
+                                            .replace('{uid}', 'id' + str(target.id))
                                             .replace('{pid}', '#' + id)
                                             .replace('{time}', str(datetime.now())),
                                             True)
         else:
-            logger.info('#' + id + ': @' + call.from_user.username + ' - access denied')
+            logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access denied')
             await bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
     except Exception as e:
         logger.error(e)
@@ -90,23 +91,16 @@ async def callback_inline(call):
 @dp.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query.replace('\n', ' ')))
 async def query_hide(inline_query: types.InlineQuery):
     try:
-        target = inline_query.from_user.username
-        if not target:
-            await bot.answer_inline_query(inline_query.id, [rsc.query_results.username_needed_to_use(await bot.get_me())])
-            return
-
+        target = inline_query.from_user
         r = re.compile(r'( @\w+)+$')
         body = r.sub('', inline_query.query)
-        scope = list(dict.fromkeys(inline_query.query[len(body) + 1:].split(' ')))
-        if '' in scope:
-            scope.remove('')
-
+        scope = inline_query.query[len(body) + 1:].split(' ')
         row_id = randint(0, 100000000)
-        insert_post(row_id, target, body, scope)
+        insert_post(row_id, target.id, body, scope)
         if get_post(row_id):
-            logger.info('#' + str(row_id) + ' has been inserted by @' + target)
+            logger.info('#' + str(row_id) + ' has been inserted by ' + get_formatted_username_or_id(target))
         else:
-            logger.warning('#' + str(row_id) + ' cannot be inserted by @' + target)
+            logger.warning('#' + str(row_id) + ' cannot be inserted by ' + get_formatted_username_or_id(target))
 
         formatted_scope = ', '.join(scope[:-1])
         if len(scope) > 1:
@@ -116,7 +110,8 @@ async def query_hide(inline_query: types.InlineQuery):
 
         await bot.answer_inline_query(inline_query.id,
            [rsc.query_results.mode_for(row_id, body, formatted_scope),
-            rsc.query_results.mode_except(row_id, body, formatted_scope)])
+            rsc.query_results.mode_except(row_id, body, formatted_scope)],
+            cache_time = 0)
     except Exception as e:
         logger.error(e)
 
