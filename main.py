@@ -79,6 +79,7 @@ async def callback_inline(call: types.inline_query):
                 .replace('{username}', get_formatted_username_or_id(target))
                 .replace('{name}', target.full_name)
                 .replace('{uid}', 'id' + str(target.id))
+                .replace('{lang}', target.language_code)
                 .replace('{pid}', '#' + id)
                 .replace('{ts}', str(creation_time))
                 .replace('{now}', str(datetime.now()))
@@ -154,9 +155,10 @@ if __name__ == '__main__':
         execute_query("""
             CREATE TABLE IF NOT EXISTS posts (
                 id INTEGER PRIMARY KEY,
-                author TEXT,
+                author INTEGER,
                 content TEXT,
-                scope TEXT);
+                scope TEXT,
+                creation_time TIMESTAMP);
                 """)
 
         logger.info('Start polling...')
