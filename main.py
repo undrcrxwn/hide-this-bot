@@ -52,7 +52,7 @@ def insert_post(id: int, author: int, content: str, scope: set):
                   (id, author, content, ' '.join(scope).replace('@', '').lower()))
 
 @dp.callback_query_handler()
-async def callback_inline(call):
+async def callback_inline(call: types.inline_query):
     try:
         target = call.from_user
         (id, mode) = str(call.data).split(' ')
@@ -125,13 +125,26 @@ async def query_hide(inline_query: types.InlineQuery):
                                   switch_pm_parameter = 'start')
 
 @dp.message_handler(commands = ['start', 'help', 'info'])
-async def send_info(message):
+async def send_info(message: types.Message):
     try:
         if message.chat.id in ignored_chat_ids: return
         Thread(target = ignore, args = (message.chat.id, 1)).start()
         await bot.send_message(message.chat.id,
                                text = rsc.messages.info(),
                                reply_markup = rsc.messages.info_keyboard(),
+                               disable_web_page_preview = True)
+    except Exception as e:
+        logger.error(e)
+
+@dp.my_chat_member_handler(lambda message: message.new_chat_member.status == 'member',
+                           chat_type = (types.ChatType.GROUP, types.ChatType.SUPERGROUP))
+async def send_group_greeting(message: types.ChatMemberUpdated):
+    try:
+        await bot.send_sticker(message.chat.id, rsc.messages.group_greeting_sticker_id())
+        await bot.send_message(message.chat.id,
+                               text = rsc.messages.group_greeting(await bot.get_me()),
+                               parse_mode = 'html',
+                               reply_markup = rsc.messages.group_greeting_keyboard(await bot.get_me()),
                                disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)

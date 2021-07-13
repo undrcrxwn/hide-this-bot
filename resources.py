@@ -1,6 +1,25 @@
 from aiogram import types
+import random
 
 class Messages:
+    def group_greeting(self, bot_user: types.User):
+        return ('👋 Hi! My name is ' + bot_user.full_name + ' and I can help you send private messages '
+                'that only certain people can view. To learn more send /start@' + bot_user.username + ' '
+                'and feel free to ask for help in our <a href="t.me/hidethisbot_chat">public community</a> '
+                'if you\'ve got any questions.\n\n'
+                '🤝 To talk to me right here do the following: '
+                '<b>Group — Edit — Administrators — Add Admin — ' + bot_user.full_name + '</b>. This will '
+                'let me see your messages and send replies')
+
+    def group_greeting_sticker_id(self):
+        return random.choice(('CAACAgIAAxkBAAECkihg7Y5tYnlKz9jRe6QCNOyvEZri2wACSQ4AAliyaUuDPYCgY_2GXiAE',
+                              'CAACAgIAAxkBAAECkilg7Y5tzJPtIX4UMDgYaoxD6zcrogAC8Q0AAvMraEvkpXQDG5qEbyAE',
+                              'CAACAgIAAxkBAAECkipg7Y5tQk6MZlccqoudX9PEnxPbUwACfBAAAhJpcEuU9SdfdRAPdiAE'))
+
+    def group_greeting_keyboard(self, bot_user: types.User):
+        return types.InlineKeyboardMarkup(inline_keyboard =
+             [[types.InlineKeyboardButton('How to use this bot?', url='t.me/' + bot_user.username)]])
+
     def info(self):
         return ('If you still have questions after reading the article, '
                 'you can leave them right here, contact support or simply '
