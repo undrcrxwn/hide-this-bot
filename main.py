@@ -64,7 +64,7 @@ async def callback_inline(call):
             await bot.answer_callback_query(call.id, text = rsc.callback_responses.not_accessible(), show_alert = True)
             return
 
-        (_, author, body, scope, _) = post
+        (_, author, body, scope, creation_time) = post
         access_granted = False
         if not target.username:
             access_granted = mode == 'except' or target.id == author
@@ -76,12 +76,15 @@ async def callback_inline(call):
         if access_granted:
             logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access granted')
             await bot.answer_callback_query(call.id, body
-                                            .replace('{username}', get_formatted_username_or_id(target))
-                                            .replace('{name}', target.full_name)
-                                            .replace('{uid}', 'id' + str(target.id))
-                                            .replace('{pid}', '#' + id)
-                                            .replace('{time}', str(datetime.now())),
-                                            True)
+                .replace('{username}', get_formatted_username_or_id(target))
+                .replace('{name}', target.full_name)
+                .replace('{uid}', 'id' + str(target.id))
+                .replace('{pid}', '#' + id)
+                .replace('{ts}', str(creation_time))
+                .replace('{now}', str(datetime.now()))
+                .replace('{date}', datetime.now().strftime('%Y-%m-%d'))
+                .replace('{time}', datetime.now().strftime('%H:%M')),
+                True)
         else:
             logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access denied')
             await bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
