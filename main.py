@@ -54,6 +54,13 @@ def insert_post(id: int, author: int, content: str, scope: set):
                   'VALUES (%s, %s, %s, %s, NOW());',
                   (id, author, content, ' '.join(scope).replace('@', '').lower()))
 
+def update_user_in_scope(id: int, username: str, user_id: int):
+    (_, author, body, scope, creation_time) = get_post(id)
+    execute_query('UPDATE posts '
+                  'SET scope = %s '
+                  'WHERE id = %s;',
+                  (scope.replace(username, str(user_id)), id))
+
 @dp.callback_query_handler()
 async def callback_inline(call: types.CallbackQuery):
     try:
@@ -72,9 +79,17 @@ async def callback_inline(call: types.CallbackQuery):
         if not target.username:
             access_granted = mode == 'except' or target.id == author
         elif mode == 'for':
-            access_granted = target.id == author or target.username.lower() in scope.split(' ')
+            if target.username.lower() in scope.split(' '):
+                access_granted = True
+                update_user_in_scope(id, target.username.lower(), target.id)
+            else:
+                access_granted = target.id == author or str(target.id) in scope.split(' ')
         elif mode == 'except':
-            access_granted = target.username.lower() not in scope.split(' ')
+            if target.username.lower() in scope.split(' '):
+                access_granted = False
+                update_user_in_scope(id, target.username.lower(), target.id)
+            else:
+                access_granted = target.id == author or str(target.id) not in scope.split(' ')
 
         if access_granted:
             logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access granted')
