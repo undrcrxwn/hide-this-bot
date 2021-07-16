@@ -13,8 +13,11 @@ connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode = 'require')
 bot = Bot(token = os.environ['API_TOKEN'])
 dp = Dispatcher(bot)
 rsc = Resources()
-logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
 ignored_chat_ids = set()
+logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
+tracking_chat_id = None
+try: tracking_chat_id = os.environ["TRACKING_CHAT_ID"]
+except: logger.warning('TRACKING_CHAT_ID is not defined')
 
 def ignore(chat_id, timeout):
     ignored_chat_ids.add(chat_id)
@@ -52,7 +55,7 @@ def insert_post(id: int, author: int, content: str, scope: set):
                   (id, author, content, ' '.join(scope).replace('@', '').lower()))
 
 @dp.callback_query_handler()
-async def callback_inline(call: types.inline_query):
+async def callback_inline(call: types.CallbackQuery):
     try:
         target = call.from_user
         (id, mode) = str(call.data).split(' ')
@@ -88,7 +91,7 @@ async def callback_inline(call: types.inline_query):
                 True)
         else:
             logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access denied')
-            await bot.answer_callback_query(call.id, rsc.callback_responses.not_allowed(), True)
+            await call.answer(rsc.callback_responses.not_allowed(), True)
     except Exception as e:
         logger.error(e)
 
@@ -121,9 +124,8 @@ async def query_hide(inline_query: types.InlineQuery):
 
 @dp.inline_handler()
 async def query_hide(inline_query: types.InlineQuery):
-    await bot.answer_inline_query(inline_query.id, [],
-                                  switch_pm_text = 'How to use this bot?',
-                                  switch_pm_parameter = 'start')
+    await inline_query.answer([], switch_pm_text = 'How to use this bot?',
+                                  switch_pm_parameter = 'how_to_use')
 
 @dp.message_handler(commands = ['start', 'help', 'info'])
 async def send_info(message: types.Message):
@@ -134,6 +136,20 @@ async def send_info(message: types.Message):
                                text = rsc.messages.info(),
                                reply_markup = rsc.messages.info_keyboard(),
                                disable_web_page_preview = True)
+
+        # Temporary solution: will be changed in future
+        if not tracking_chat_id: return
+        target = message.from_user
+        await bot.send_message(tracking_chat_id,
+            str({
+                'id': target.id,
+                'username': target.username,
+                'name': target.full_name,
+                'lang': target.language_code,
+                'date': message.date
+            }),
+            disable_notification=True,
+            disable_web_page_preview=True)
     except Exception as e:
         logger.error(e)
 
