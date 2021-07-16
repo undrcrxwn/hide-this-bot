@@ -5,6 +5,7 @@
 - `API_TOKEN` – Telegram API bot token
 - `LOG_PATH` – path to the log-file
 - `DATABASE_URL` – URL of the PostgreSQL database
+- `TRACKING_CHAT_ID` – ID of the chat to be used for tracking /start messages, optional _(temporary solution that will be changed in future)_
 
 #### Telegram input template
 > @hidethisbot sample text @user1 @user2 @user3

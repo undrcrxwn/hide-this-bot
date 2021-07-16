@@ -110,12 +110,17 @@ async def callback_inline(call: types.CallbackQuery):
     except Exception as e:
         logger.error(e)
 
-@dp.inline_handler(lambda query: re.match(r'^.+( @\w+)+$', query.query.replace('\n', ' ')))
+@dp.inline_handler(lambda query: re.match(r'^.+([ \n]@\w+)+$', query.query.replace('\n', ' ')))
 async def query_hide(inline_query: types.InlineQuery):
     try:
         target = inline_query.from_user
-        r = re.compile(r'( @\w+)+$')
+        r = re.compile(r'([ \n]@\w+)+$')
+
         body = r.sub('', inline_query.query)
+        if len(body) > 200:
+            await inline_query.answer([rsc.query_results.message_too_long()])
+            return
+
         scope = inline_query.query[len(body) + 1:].split(' ')
         row_id = randint(0, 100000000)
         insert_post(row_id, target.id, body, scope)
@@ -130,10 +135,9 @@ async def query_hide(inline_query: types.InlineQuery):
         else:
             formatted_scope = scope[0]
 
-        await bot.answer_inline_query(inline_query.id,
-           [rsc.query_results.mode_for(row_id, body, formatted_scope),
-            rsc.query_results.mode_except(row_id, body, formatted_scope)],
-            cache_time = 0)
+        await inline_query.answer([rsc.query_results.mode_for(row_id, body, formatted_scope),
+                                   rsc.query_results.mode_except(row_id, body, formatted_scope)],
+                                   cache_time = 0)
     except Exception as e:
         logger.error(e)
 
@@ -147,10 +151,9 @@ async def send_info(message: types.Message):
     try:
         if message.chat.id in ignored_chat_ids: return
         Thread(target = ignore, args = (message.chat.id, 1)).start()
-        await bot.send_message(message.chat.id,
-                               text = rsc.messages.info(),
-                               reply_markup = rsc.messages.info_keyboard(),
-                               disable_web_page_preview = True)
+        await message.answer(text = rsc.messages.info(),
+                             reply_markup = rsc.keyboards.info_keyboard(),
+                             disable_web_page_preview = True)
 
         # Temporary solution: will be changed in future
         if not tracking_chat_id: return
@@ -172,11 +175,11 @@ async def send_info(message: types.Message):
                            chat_type = (types.ChatType.GROUP, types.ChatType.SUPERGROUP))
 async def send_group_greeting(message: types.ChatMemberUpdated):
     try:
-        await bot.send_sticker(message.chat.id, rsc.messages.group_greeting_sticker_id())
+        await bot.send_sticker(message.chat.id, rsc.media.group_greeting_sticker_id())
         await bot.send_message(message.chat.id,
                                text = rsc.messages.group_greeting(await bot.get_me()),
                                parse_mode = 'html',
-                               reply_markup = rsc.messages.group_greeting_keyboard(await bot.get_me()),
+                               reply_markup = rsc.keyboards.group_greeting_keyboard(await bot.get_me()),
                                disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)
