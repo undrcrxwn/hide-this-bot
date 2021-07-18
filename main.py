@@ -8,16 +8,24 @@ import psycopg2
 from random import *
 from resources import *
 from aiogram import Bot, Dispatcher, executor, types
+from locales import *
+
+logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
+
+locales = LocalesDict({
+    'en': locale_en,
+    'ru': locale_ru
+}, locale_en)
+rsc = Resources(locales)
+
+ignored_chat_ids = set()
+tracking_chat_id = None
+try: tracking_chat_id = os.environ["TRACKING_CHAT_ID"]
+except: logger.warning('TRACKING_CHAT_ID is not defined')
 
 connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode = 'require')
 bot = Bot(token = os.environ['API_TOKEN'])
 dp = Dispatcher(bot)
-rsc = Resources()
-ignored_chat_ids = set()
-logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
-tracking_chat_id = None
-try: tracking_chat_id = os.environ["TRACKING_CHAT_ID"]
-except: logger.warning('TRACKING_CHAT_ID is not defined')
 
 def ignore(chat_id, timeout):
     ignored_chat_ids.add(chat_id)
@@ -71,7 +79,7 @@ async def callback_inline(call: types.CallbackQuery):
         except Exception as e:
             logger.error(e)
             logger.warning('#' + id + ' cannot be reached by ' + get_formatted_username_or_id(target))
-            await bot.answer_callback_query(call.id, text = rsc.callback_responses.not_accessible(), show_alert = True)
+            await bot.answer_callback_query(call.id, text = locales[target.language_code].not_accessible, show_alert = True)
             return
 
         (_, author, body, scope, creation_time) = post
@@ -106,7 +114,7 @@ async def callback_inline(call: types.CallbackQuery):
                 True)
         else:
             logger.info('#' + id + ': ' + get_formatted_username_or_id(target) + ' - access denied')
-            await call.answer(rsc.callback_responses.not_allowed(), True)
+            await call.answer(locales[target.language_code].not_allowed, True)
     except Exception as e:
         logger.error(e)
 
@@ -118,7 +126,7 @@ async def query_hide(inline_query: types.InlineQuery):
 
         body = r.sub('', inline_query.query)
         if len(body) > 200:
-            await inline_query.answer([rsc.query_results.message_too_long()])
+            await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
             return
 
         scope = inline_query.query[len(body) + 1:].split(' ')
@@ -135,15 +143,15 @@ async def query_hide(inline_query: types.InlineQuery):
         else:
             formatted_scope = scope[0]
 
-        await inline_query.answer([rsc.query_results.mode_for(row_id, body, formatted_scope),
-                                   rsc.query_results.mode_except(row_id, body, formatted_scope)],
+        await inline_query.answer([rsc.query_results.mode_for(target.language_code, row_id, body, formatted_scope),
+                                   rsc.query_results.mode_except(target.language_code, row_id, body, formatted_scope)],
                                    cache_time = 0)
     except Exception as e:
         logger.error(e)
 
 @dp.inline_handler()
 async def query_hide(inline_query: types.InlineQuery):
-    await inline_query.answer([], switch_pm_text = 'How to use this bot?',
+    await inline_query.answer([], switch_pm_text = locales[inline_query.from_user.language_code].how_to_use,
                                   switch_pm_parameter = 'how_to_use')
 
 @dp.message_handler(commands = ['start', 'help', 'info'])
@@ -151,7 +159,7 @@ async def send_info(message: types.Message):
     try:
         if message.chat.id in ignored_chat_ids: return
         Thread(target = ignore, args = (message.chat.id, 1)).start()
-        await message.answer(text = rsc.messages.info(),
+        await message.answer(text = locales[message.from_user.language_code].info_message,
                              reply_markup = rsc.keyboards.info_keyboard(),
                              disable_web_page_preview = True)
 
@@ -175,9 +183,11 @@ async def send_info(message: types.Message):
                            chat_type = (types.ChatType.GROUP, types.ChatType.SUPERGROUP))
 async def send_group_greeting(message: types.ChatMemberUpdated):
     try:
+        bot_user = await bot.get_me()
         await bot.send_sticker(message.chat.id, rsc.media.group_greeting_sticker_id())
         await bot.send_message(message.chat.id,
-                               text = rsc.messages.group_greeting(await bot.get_me()),
+                               text = locales[message.from_user.language_code].group_greeting_message
+                                    % (bot_user.full_name, bot_user.username, bot_user.full_name),
                                parse_mode = 'html',
                                reply_markup = rsc.keyboards.group_greeting_keyboard(await bot.get_me()),
                                disable_web_page_preview = True)
