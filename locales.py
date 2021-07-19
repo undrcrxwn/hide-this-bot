@@ -5,23 +5,23 @@ locale_ru = Locale()
 locale_ua = Locale()
 locale_it = Locale()
 
-# MESSAGE_TOO_LONG_MESSAGE
-locale_en.message_too_long_message = '🥺 Sorry, your message can\'t be sent as it exceeds the limit of 200 characters.'
-locale_ru.message_too_long_message = '🥺 Ваше сообщение не может быть отправлено, так как его длина превышает лимит в 200 символов.'
-locale_ua.message_too_long_message = '🥺 Ваше повідомлення не може бути відправлено, так як його довжина перевищує ліміт в 200 символів.'
-locale_it.message_too_long_message = '🥺 Mi dispiace, il tuo messaggio non può essere mandato, supera il limite di 200 caratteri.'
+# TOO_LONG_MESSAGE
+locale_en.too_long_message = '🥺 Sorry, your message can\'t be sent as it exceeds the limit of 200 characters.'
+locale_ru.too_long_message = '🥺 Ваше сообщение не может быть отправлено, так как его длина превышает лимит в 200 символов.'
+locale_ua.too_long_message = '🥺 Ваше повідомлення не може бути відправлено, так як його довжина перевищує ліміт в 200 символів.'
+locale_it.too_long_message = '🥺 Mi dispiace, il tuo messaggio non può essere mandato, supera il limite di 200 caratteri.'
 
-# MESSAGE_TOO_LONG_TITLE
-locale_en.message_too_long_title = 'Your message is too long'
-locale_ru.message_too_long_title = 'Слишком длинное сообщение'
-locale_ua.message_too_long_message = 'Занадто довге повідомлення'
-locale_it.message_too_long_message = 'Il tuo messaggio è troppo lungo'
+# TOO_LONG_TITLE
+locale_en.too_long_title = 'Your message is too long'
+locale_ru.too_long_title = 'Слишком длинное сообщение'
+locale_ua.too_long_message = 'Занадто довге повідомлення'
+locale_it.too_long_message = 'Il tuo messaggio è troppo lungo'
 
-# MESSAGE_TOO_LONG_DESCRIPTION
-locale_en.message_too_long_description = 'Please shorten the length of your message so that it doesn\'t exceed the limit of 200 characters.'
-locale_ru.message_too_long_description = 'Пожалуйста, сократите длину вашего сообщения, чтобы она не превышала лимит в 200 символов.'
-locale_ua.message_too_long_description = 'Будь ласка, скоротіть довжину Вашого повідомлення, щоб вона не перевищувала ліміт в 200 символів.'
-locale_it.message_too_long_description = 'Perfavore accorcia la lunghezza del tuo messaggio in modo che non superi i 200 caratteri.'
+# TOO_LONG_DESCRIPTION
+locale_en.too_long_description = 'Please shorten the length of your message so that it doesn\'t exceed the limit of 200 characters.'
+locale_ru.too_long_description = 'Пожалуйста, сократите длину вашего сообщения, чтобы она не превышала лимит в 200 символов.'
+locale_ua.too_long_description = 'Будь ласка, скоротіть довжину Вашого повідомлення, щоб вона не перевищувала ліміт в 200 символів.'
+locale_it.too_long_description = 'Perfavore accorcia la lunghezza del tuo messaggio in modo che non superi i 200 caratteri.'
 
 # HOW_TO_USE
 locale_en.how_to_use = 'How to use this bot?'
@@ -29,17 +29,17 @@ locale_ru.how_to_use = 'Как пользоваться этим ботом?'
 locale_ua.how_to_use = 'Як користуватися цим ботом?'
 locale_it.how_to_use = 'Come usare questo bot?'
 
-# PRIVATE_MESSAGE_FOR
-locale_en.private_message_for = 'Private message for %s.'
-locale_ru.private_message_for = 'Приватное сообщение для %s.'
-locale_ua.private_message_for = 'Приватне повідомлення для %s.'
-locale_it.private_message_for = 'Messaggio privato per %s.'
+# FOR_MESSAGE
+locale_en.for_message = 'Private message for %s.'
+locale_ru.for_message = 'Приватное сообщение для %s.'
+locale_ua.for_message = 'Приватне повідомлення для %s.'
+locale_it.for_message = 'Messaggio privato per %s.'
 
-# PRIVATE_MESSAGE_EXCEPT
-locale_en.private_message_except = 'Private message for everyone except %s.'
-locale_ru.private_message_except = 'Приватное сообщение для всех, кроме %s.'
-locale_ua.private_message_except = 'Приватне повідомлення для всіх, крім %s.'
-locale_it.private_message_except = 'Messaggio privato per tutti tranne %s.'
+# EXCEPT_MESSAGE
+locale_en.except_message = 'Private message for everyone except %s.'
+locale_ru.except_message = 'Приватное сообщение для всех, кроме %s.'
+locale_ua.except_message = 'Приватне повідомлення для всіх, крім %s.'
+locale_it.except_message = 'Messaggio privato per tutti tranne %s.'
 
 # FOR_TITLE
 locale_en.for_title = 'For %s'
@@ -52,6 +52,12 @@ locale_en.except_title = 'Except %s'
 locale_ru.except_title = 'Кроме %s'
 locale_ua.except_title = 'Крім %s'
 locale_it.except_title = 'Tranne %s'
+
+# AND_CONNECTOR
+locale_en.and_connector = 'and'
+locale_ru.and_connector = 'и'
+locale_ua.and_connector = 'i'
+locale_it.and_connector = 'e'
 
 # VIEW
 locale_en.view = 'View'
@@ -96,8 +102,8 @@ locale_en.info_message = (
         '👥 Public chat: @hidethisbot_chat\n'
         '⚙ Support: @undrcrxwn')
 locale_ru.info_message = (
-        'Если у вас остались вопросы после прочтения статьи, вы можете в любое время обратиться в службу '
-        'поддержки или попросить о помощи в нашем публичном чате.\n\n'
+        'Если у вас остались вопросы после прочтения статьи, вы можете в любое время обратиться в '
+        'поддержкиу или попросить о помощи в нашем публичном чате.\n\n'
         '👥 Публичный чат: @hidethisbot_chat\n'
         '⚙ Поддержка: @undrcrxwn')
 locale_ua.info_message = (

@@ -1,12 +1,13 @@
 class Locale():
-    message_too_long_message: str
-    message_too_long_title: str
-    message_too_long_description: str
+    too_long_message: str
+    too_long_title: str
+    too_long_description: str
     how_to_use: str
-    private_message_for: str
-    private_message_except: str
+    for_message: str
+    except_message: str
     for_title: str
     except_title: str
+    and_connector: str
     view: str
     not_allowed: str
     not_accessible: str

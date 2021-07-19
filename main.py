@@ -141,7 +141,7 @@ async def query_hide(inline_query: types.InlineQuery):
 
         formatted_scope = ', '.join(scope[:-1])
         if len(scope) > 1:
-            formatted_scope += ' and ' + scope[-1]
+            formatted_scope += ' %s ' % locales[target.language_code].and_connector + scope[-1]
         else:
             formatted_scope = scope[0]
 

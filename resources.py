@@ -7,17 +7,17 @@ class QueryResults:
         self.locales = locales
 
     def message_too_long(self, lang: str):
-        message_content = types.InputTextMessageContent(self.locales[lang].message_too_long_message)
+        message_content = types.InputTextMessageContent(self.locales[lang].too_long_message)
         return types.InlineQueryResultArticle(
-            id = '1', title = self.locales[lang].message_too_long_title,
+            id = '1', title = self.locales[lang].too_long_title,
             input_message_content = message_content,
-            description = self.locales[lang].message_too_long_description,
+            description = self.locales[lang].too_long_description,
             thumb_url = 'https://i.imgur.com/xblMvAx.png')
 
     def mode_for(self, lang: str, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup(inline_keyboard =
             [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' for')]])
-        message_content = types.InputTextMessageContent(self.locales[lang].private_message_for % scope_string)
+        message_content = types.InputTextMessageContent(self.locales[lang].for_message % scope_string)
         return types.InlineQueryResultArticle(
             id = '1', title = self.locales[lang].for_title % scope_string,
             input_message_content = message_content,
@@ -28,7 +28,7 @@ class QueryResults:
     def mode_except(self, lang: str, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup(inline_keyboard =
             [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' except')]])
-        message_content = types.InputTextMessageContent(self.locales[lang].private_message_except % scope_string)
+        message_content = types.InputTextMessageContent(self.locales[lang].except_message % scope_string)
         return types.InlineQueryResultArticle(
             id = '2', title = self.locales[lang].except_title % scope_string,
             input_message_content = message_content,
