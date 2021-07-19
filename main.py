@@ -20,6 +20,9 @@ locales = LocalesDict({
 }, locale_en)
 rsc = Resources(locales)
 
+inline_query_regex = re.compile(r'^.+([ \n](@\w+|id[0-9]+))+$')
+scope_regex = re.compile(r'([ \n](@\w+|id[0-9]+))+$')
+
 ignored_chat_ids = set()
 tracking_chat_id = None
 try: tracking_chat_id = os.environ["TRACKING_CHAT_ID"]
@@ -120,20 +123,19 @@ async def callback_inline(call: types.CallbackQuery):
     except Exception as e:
         logger.error(e)
 
-@dp.inline_handler(lambda query: re.match(r'^.+([ \n]@\w+)+$', query.query.replace('\n', ' ')))
+@dp.inline_handler(lambda query: re.match(inline_query_regex, query.query.replace('\n', ' ')))
 async def query_hide(inline_query: types.InlineQuery):
     try:
         target = inline_query.from_user
-        r = re.compile(r'([ \n]@\w+)+$')
 
-        body = r.sub('', inline_query.query)
+        body = scope_regex.sub('', inline_query.query)
         if len(body) > 200:
             await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
             return
 
-        scope = inline_query.query[len(body) + 1:].split(' ')
+        scope = re.sub(r'(id)([0-9]+)', r'\g<2>', inline_query.query[len(body) + 1:]).split(' ')
         row_id = randint(0, 100000000)
-        insert_post(row_id, target.id, body, scope)
+        insert_post(row_id, target.id, body, set(scope))
         if get_post(row_id):
             logger.info('#' + str(row_id) + ' has been inserted by ' + get_formatted_username_or_id(target))
         else:
