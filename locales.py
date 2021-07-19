@@ -37,8 +37,8 @@ locale_it.for_message = 'Messaggio privato per %s.'
 
 # EXCEPT_MESSAGE
 locale_en.except_message = 'Private message for everyone except %s.'
-locale_ru.except_message = 'Приватное сообщение для всех, кроме %s.'
-locale_ua.except_message = 'Приватне повідомлення для всіх, крім %s.'
+locale_ru.except_message = 'Приватное сообщение для всех,\n кроме %s.'
+locale_ua.except_message = 'Приватне повідомлення для всіх,\n крім %s.'
 locale_it.except_message = 'Messaggio privato per tutti tranne %s.'
 
 # FOR_TITLE
