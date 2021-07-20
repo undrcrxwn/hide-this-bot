@@ -15,7 +15,7 @@ logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
 locales = LocalesDict({
     'en': locale_en,
     'ru': locale_ru,
-    'ua': locale_ua,
+    'uk': locale_uk,
     'it': locale_it
 }, locale_en)
 rsc = Resources(locales)
