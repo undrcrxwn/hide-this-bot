@@ -191,9 +191,8 @@ async def send_group_greeting(message: types.ChatMemberUpdated):
         await bot.send_sticker(message.chat.id, rsc.media.group_greeting_sticker_id())
         await bot.send_message(message.chat.id,
                                text = locales[message.from_user.language_code].group_greeting_message
-                                    % (bot_user.full_name, bot_user.username, bot_user.full_name),
+                                    % (bot_user.full_name, bot_user.username),
                                parse_mode = 'html',
-                               reply_markup = rsc.keyboards.group_greeting_keyboard(await bot.get_me()),
                                disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)
