@@ -78,22 +78,22 @@ async def callback_inline(call: types.CallbackQuery):
             await bot.answer_callback_query(call.id, text = locales[target.language_code].not_accessible, show_alert = True)
             return
 
-        (_, author, body, scope, creation_time) = post
+        (_, author, body, scope_string, creation_time) = post
+        scope = scope_string.split(' ')
         access_granted = False
         if target.username is None:
             access_granted = mode == 'except' or target.id == author
         elif mode == 'for':
-            if target.username.lower() in scope.split(' '):
+            if target.username.lower() in scope:
                 access_granted = True
                 update_user_in_scope(pid, target.username.lower(), target.id)
             else:
-                access_granted = target.id == author or str(target.id) in scope.split(' ')
+                access_granted = target.id == author or str(target.id) in scope
         elif mode == 'except':
-            if target.username.lower() in scope.split(' '):
-                access_granted = False
+            if target.username.lower() in scope:
                 update_user_in_scope(pid, target.username.lower(), target.id)
             else:
-                access_granted = target.id == author and str(target.id) not in scope.split(' ')
+                access_granted = str(target.id) not in scope
 
         if access_granted:
             logger.info('#' + pid + ': ' + get_formatted_username_or_id(target) + ' - access granted')
