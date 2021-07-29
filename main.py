@@ -50,31 +50,35 @@ def execute_read_query(query, data = None):
 def get_formatted_username_or_id(user: types.User):
     return 'id' + str(user.id) if user.username is None else '@' + user.username
 
-def get_post(pid: int):
-    return execute_read_query('SELECT * FROM posts WHERE id = %s', (str(pid),))[0]
+def get_post(post_id: int):
+    return execute_read_query('SELECT * FROM posts WHERE id = %s', (str(post_id),))[0]
 
-def insert_post(pid: int, author: int, content: str, scope: list):
+def insert_post(post_id: int, author: int, content: str, scope: list):
     execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
                   'VALUES (%s, %s, %s, %s, NOW());',
-                  (pid, author, content, ' '.join(scope).replace('@', '').lower()))
+                  (post_id, author, content, ' '.join(scope).replace('@', '').lower()))
 
-def update_user_in_scope(pid: int, username: str, user_id: int):
-    (_, author, body, scope, creation_time) = get_post(pid)
+def update_user_in_scope(post_id: int, username: str, user_id: int):
+    (_, author, body, scope_string, creation_time) = get_post(post_id)
+    scope = scope_string.split(' ')
+    for i in range(len(scope)):
+        if scope[i] == username:
+            scope[i] = str(user_id)
     execute_query('UPDATE posts '
                   'SET scope = %s '
                   'WHERE id = %s;',
-                  (scope.replace(username, str(user_id)), pid))
+                  (' '.join(scope), post_id))
 
 @dp.callback_query_handler()
 async def callback_inline(call: types.CallbackQuery):
     try:
         target = call.from_user
-        (pid, mode) = str(call.data).split(' ')
+        (post_id, mode) = str(call.data).split(' ')
         try:
-            post = get_post(pid)
+            post = get_post(post_id)
         except Exception as e:
             logger.error(e)
-            logger.warning('#' + pid + ' cannot be reached by ' + get_formatted_username_or_id(target))
+            logger.warning('#' + post_id + ' cannot be reached by ' + get_formatted_username_or_id(target))
             await bot.answer_callback_query(call.id, text = locales[target.language_code].not_accessible, show_alert = True)
             return
 
@@ -86,30 +90,30 @@ async def callback_inline(call: types.CallbackQuery):
         elif mode == 'for':
             if target.username.lower() in scope:
                 access_granted = True
-                update_user_in_scope(pid, target.username.lower(), target.id)
+                update_user_in_scope(post_id, target.username.lower(), target.id)
             else:
                 access_granted = target.id == author or str(target.id) in scope
         elif mode == 'except':
             if target.username.lower() in scope:
-                update_user_in_scope(pid, target.username.lower(), target.id)
+                update_user_in_scope(post_id, target.username.lower(), target.id)
             else:
                 access_granted = str(target.id) not in scope
 
         if access_granted:
-            logger.info('#' + pid + ': ' + get_formatted_username_or_id(target) + ' - access granted')
+            logger.info('#' + post_id + ': ' + get_formatted_username_or_id(target) + ' - access granted')
             await bot.answer_callback_query(call.id, body
                 .replace('{username}', get_formatted_username_or_id(target))
                 .replace('{name}', target.full_name)
                 .replace('{uid}', 'id' + str(target.id))
                 .replace('{lang}', 'unknown' if target.language_code is None else target.language_code)
-                .replace('{pid}', '#' + pid)
+                .replace('{pid}', '#' + post_id)
                 .replace('{ts}', str(creation_time))
                 .replace('{now}', str(datetime.now()))
                 .replace('{date}', datetime.now().strftime('%Y-%m-%d'))
                 .replace('{time}', datetime.now().strftime('%H:%M')),
                 True)
         else:
-            logger.info('#' + pid + ': ' + get_formatted_username_or_id(target) + ' - access denied')
+            logger.info('#' + post_id + ': ' + get_formatted_username_or_id(target) + ' - access denied')
             await call.answer(locales[target.language_code].not_allowed, True)
     except Exception as e:
         logger.error(e)
@@ -126,12 +130,12 @@ async def query_hide(inline_query: types.InlineQuery):
         raw_scope = re.sub(r'(id)([0-9]+)', r'\g<2>', inline_query.query[len(body) + 1:]).split(' ')
         marker = set()
         scope = [not marker.add(x.casefold()) and x for x in raw_scope if x.casefold() not in marker]
-        pid = random.randint(0, 100000000)
-        insert_post(pid, target.id, body, scope)
-        if get_post(pid):
-            logger.info('#' + str(pid) + ' has been inserted by ' + get_formatted_username_or_id(target))
+        post_id = random.randint(0, 100000000)
+        insert_post(post_id, target.id, body, scope)
+        if get_post(post_id):
+            logger.info('#' + str(post_id) + ' has been inserted by ' + get_formatted_username_or_id(target))
         else:
-            logger.warning('#' + str(pid) + ' cannot be inserted by ' + get_formatted_username_or_id(target))
+            logger.warning('#' + str(post_id) + ' cannot be inserted by ' + get_formatted_username_or_id(target))
 
         formatted_scope = ', '.join(scope[:-1])
         if len(scope) > 1:
@@ -139,8 +143,8 @@ async def query_hide(inline_query: types.InlineQuery):
         else:
             formatted_scope = scope[0]
 
-        await inline_query.answer([rsc.query_results.mode_for(target.language_code, pid, body, formatted_scope),
-                                   rsc.query_results.mode_except(target.language_code, pid, body, formatted_scope)],
+        await inline_query.answer([rsc.query_results.mode_for(target.language_code, post_id, body, formatted_scope),
+                                   rsc.query_results.mode_except(target.language_code, post_id, body, formatted_scope)],
                                    cache_time = 0)
     except Exception as e:
         logger.error(e)
