@@ -101,7 +101,7 @@ async def callback_inline(call: types.CallbackQuery):
                 .replace('{username}', get_formatted_username_or_id(target))
                 .replace('{name}', target.full_name)
                 .replace('{uid}', 'id' + str(target.id))
-                .replace('{lang}', target.language_code)
+                .replace('{lang}', 'unknown' if target.language_code is None else target.language_code)
                 .replace('{pid}', '#' + pid)
                 .replace('{ts}', str(creation_time))
                 .replace('{now}', str(datetime.now()))
