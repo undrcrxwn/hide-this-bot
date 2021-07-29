@@ -1,5 +1,27 @@
 {
   "name": "Hide This Bot",
   "description": "An inline Telegram bot to keep your private messages hidden from prying eyes.",
-  "repository": "https://github.com/undrcrxwn/hidethisbot"
+  "repository": "https://github.com/undrcrxwn/hidethisbot",
+  "env": {
+    "API_TOKEN": {
+      "description": "Telegram API bot token",
+      "value": ""
+    },
+    "LOG_PATH": {
+      "description": "Path to the log-file",
+      "value": "Logs/session.log",
+      "required": false
+    },
+    "TRACKING_CHAT_ID": {
+      "description": "ID of the chat to be used for tracking /start messages, optional (temporary solution that will be changed in future)",
+      "value": "",
+      "required": false
+    }
+  },
+  "addons": [
+    { "plan": "heroku-postgresql:hobby-dev" }
+  ],
+  "buildpacks": [
+    { "url": "heroku/python" }
+  ]
 }
