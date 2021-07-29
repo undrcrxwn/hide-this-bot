@@ -1,6 +1,6 @@
-from aiogram import types
 import random
-from locales_dict import *
+from aiogram import types
+from locales_dict import LocalesDict
 
 class QueryResults:
     def __init__(self, locales: LocalesDict):

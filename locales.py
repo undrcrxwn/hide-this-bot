@@ -1,9 +1,16 @@
-from locales_dict import Locale
+from locales_dict import Locale, LocalesDict
 
 locale_en = Locale()
 locale_ru = Locale()
 locale_uk = Locale()
 locale_it = Locale()
+
+locales = LocalesDict({
+    'en': locale_en,
+    'ru': locale_ru,
+    'uk': locale_uk,
+    'it': locale_it
+}, locale_en)
 
 # TOO_LONG_MESSAGE
 locale_en.too_long_message = '🥺 Sorry, your message can\'t be sent as it exceeds the limit of 200 characters.'

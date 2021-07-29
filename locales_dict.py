@@ -20,5 +20,6 @@ class LocalesDict:
         self.default_locale = default_locale
 
     def __getitem__(self, lang) -> Locale:
-        if not lang: return self.default_locale
+        if lang is None:
+            return self.default_locale
         return self.locales.get(lang[:2], self.default_locale)
