@@ -24,10 +24,6 @@ inline_query_regex = re.compile(r'^.+([ \n](@\w+|id[0-9]+))+$')
 scope_regex = re.compile(r'([ \n](@\w+|id[0-9]+))+$')
 
 ignored_chat_ids = set()
-tracking_chat_id = None
-try: tracking_chat_id = os.environ["TRACKING_CHAT_ID"]
-except: logger.warning('TRACKING_CHAT_ID is not defined')
-
 connection = psycopg2.connect(os.environ['DATABASE_URL'], sslmode = 'require')
 bot = Bot(token = os.environ['API_TOKEN'])
 dp = Dispatcher(bot)
@@ -166,20 +162,6 @@ async def send_info(message: types.Message):
         await message.answer(text = locales[message.from_user.language_code].info_message,
                              reply_markup = rsc.keyboards.info_keyboard(),
                              disable_web_page_preview = True)
-
-        # Temporary solution: will be changed in future
-        if not tracking_chat_id: return
-        target = message.from_user
-        await bot.send_message(tracking_chat_id,
-            str({
-                'id': target.id,
-                'username': target.username,
-                'name': target.full_name,
-                'lang': target.language_code,
-                'date': message.date
-            }),
-            disable_notification=True,
-            disable_web_page_preview=True)
     except Exception as e:
         logger.error(e)
 
