@@ -61,8 +61,8 @@ def insert_post(post_id: int, author: int, content: str, scope: list):
 def update_user_in_scope(post_id: int, username: str, user_id: int):
     (_, author, body, scope_string, creation_time) = get_post(post_id)
     scope = scope_string.split(' ')
-    for i in range(len(scope)):
-        if scope[i] == username:
+    for i, mention in enumerate(scope):
+        if mention == username:
             scope[i] = str(user_id)
     execute_query('UPDATE posts '
                   'SET scope = %s '
@@ -85,16 +85,14 @@ async def callback_inline(call: types.CallbackQuery):
         (_, author, body, scope_string, creation_time) = post
         scope = scope_string.split(' ')
         access_granted = False
-        if target.username is None:
-            access_granted = mode == 'except' or target.id == author
-        elif mode == 'for':
-            if target.username.lower() in scope:
+        if mode == 'for':
+            if target.username and target.username.lower() in scope:
                 access_granted = True
                 update_user_in_scope(post_id, target.username.lower(), target.id)
             else:
                 access_granted = target.id == author or str(target.id) in scope
         elif mode == 'except':
-            if target.username.lower() in scope:
+            if target.username and target.username.lower() in scope:
                 update_user_in_scope(post_id, target.username.lower(), target.id)
             else:
                 access_granted = str(target.id) not in scope
