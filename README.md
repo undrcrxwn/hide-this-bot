@@ -1,8 +1,9 @@
 # Hide This Bot
 [Hide This Bot](https://t.me/hidethisbot) is an inline Telegram bot to keep your private messages hidden from prying eyes.
 
-[![CodeFactor](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/overview/master)
-
+[![](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/overview/master) 
+[![](https://img.shields.io/badge/telegram-@hidethisbot-blue)](https://t.me/hidethisbot) 
+[![](https://img.shields.io/badge/community-@hidethisbot__chat-blue)](https://t.me/hidethisbot_chat)
 
 ### How do I host it?
 Here is a brief guide you can follow to host your own Hide This Bot in case you are afraid of data leaks or for any other reason.
@@ -39,6 +40,6 @@ Can be used in messages as normal text. For instance, you can write the followin
 - `{ts}` – post creation timestamp (e. g. **2077-07-05 19:53:17.864156**)
 - `{now}` – precise timestamp (e. g. **2077-07-05 19:53:17.864156**)
 - `{date}` – current date (e. g. **2077-07-05**)
-- `{time}` – current time (e. g. **19:53:17**)
+- `{time}` – current time (e. g. **19:53**)
 
 All datetime-related placeholders depend on the server's timezone which can be changed by specifying optional `TZ` environment variable. Expected value is [TZ database name](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List) (e. g. `	America/New_York` or `Europe/Moscow`).
