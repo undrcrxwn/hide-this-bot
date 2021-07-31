@@ -1,18 +1,23 @@
 class Locale():
-    too_long_message: str
     too_long_title: str
-    too_long_description: str
-    how_to_use: str
-    for_message: str
-    except_message: str
     for_title: str
     except_title: str
-    and_connector: str
-    view: str
-    not_allowed: str
-    not_accessible: str
+    spoiler_title: str
+
+    too_long_message: str
+    for_message: str
+    except_message: str
+    spoiler_message: str
     group_greeting_message: str
     info_message: str
+
+    how_to_use: str
+    too_long_description: str
+
+    not_allowed: str
+    not_accessible: str
+    view: str
+    and_connector: str
 
 class LocalesDict:
     def __init__(self, locales: dict[str, Locale], default_locale: Locale):

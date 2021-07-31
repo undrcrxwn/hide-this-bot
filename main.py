@@ -29,48 +29,140 @@ def ignore(chat_id, timeout):
     ignored_chat_ids.remove(chat_id)
 
 def execute_query(query, data = None):
+    result = None
     try:
         cursor = connection.cursor()
         cursor.execute(query, data)
         connection.commit()
+        try:
+            result = cursor.fetchall()
+        except:
+            pass
     except Exception as e:
         logger.error(e)
         connection.rollback()
         logger.info('transaction rollback: "' + query + '"')
+    return result
 
 def execute_read_query(query, data = None):
+    result = None
     try:
         cursor = connection.cursor()
         cursor.execute(query, data)
-        result = cursor.fetchall()
-        return result
+        try:
+            result = cursor.fetchall()
+        except:
+            pass
     except Exception as e:
         logger.error(e)
+    return result
 
 def get_formatted_username_or_id(user: types.User):
     return 'id' + str(user.id) if user.username is None else '@' + user.username
 
 def get_post(post_id: int):
-    return execute_read_query('SELECT * FROM posts WHERE id = %s', (str(post_id),))[0]
+    result = None
+    try:
+        result = execute_read_query('SELECT * FROM posts WHERE id = %s', (str(post_id),))[0]
+    except Exception as e:
+        logger.error(e)
 
-def insert_post(post_id: int, author: int, content: str, scope: list):
-    execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
-                  'VALUES (%s, %s, %s, %s, NOW());',
-                  (post_id, author, content, ' '.join(scope).replace('@', '').lower()))
+    if result is None:
+        logger.warning('#' + str(post_id) + ' cannot be reached')
+    return result
+
+def insert_post(post_id: int, author: types.User, content: str, scope: list = None):
+    result = None
+    try:
+        scope_string = '' if scope is None else ' '.join(scope).lower()
+        result = execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
+                               'VALUES (%s, %s, %s, %s, NOW()) RETURNING id',
+                               (post_id, author.id, content, scope_string))
+    except Exception as e:
+        logger.error(e)
+
+    if result is None:
+        logger.warning('#' + str(post_id) + ' cannot be inserted by ' + get_formatted_username_or_id(author))
+    else:
+        logger.info('#' + str(post_id) + ' has been inserted by ' + get_formatted_username_or_id(author))
+    return result
 
 def update_user_in_scope(post_id: int, username: str, user_id: int):
-    (_, author, body, scope_string, creation_time) = get_post(post_id)
-    scope = scope_string.split(' ')
-    for i, mention in enumerate(scope):
-        if mention == username:
-            scope[i] = str(user_id)
-    execute_query('UPDATE posts '
-                  'SET scope = %s '
-                  'WHERE id = %s;',
-                  (' '.join(scope), post_id))
+    try:
+        (_, author, body, scope_string, creation_time) = get_post(post_id)
+        scope = scope_string.split(' ')
+        for i, mention in enumerate(scope):
+            if mention == username:
+                scope[i] = str(user_id)
+        execute_query('UPDATE posts '
+                      'SET scope = %s '
+                      'WHERE id = %s;',
+                      (' '.join(scope), post_id))
+    except Exception as e:
+        logger.error(e)
+        logger.warning('cannot update @' +  username + ' to id: ' + str(user_id) + ' in scope #' + str(post_id))
+
+@dp.inline_handler(lambda query: re.match(inline_query_regex, query.query.replace('\n', ' ')))
+async def inline_query_hide(inline_query: types.InlineQuery):
+    try:
+        target = inline_query.from_user
+        body = scope_regex.sub('', inline_query.query)
+        if len(body) > 200:
+            await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
+            return
+
+        raw_scope = re.sub(r'(id)([0-9]+)', r'\g<2>', inline_query.query[len(body) + 1:]).split(' ')
+        marker = set()
+        scope = [not marker.add(x.casefold()) and x for x in raw_scope if x.casefold() not in marker]
+        post_id = random.randint(0, 100000000)
+        insert_post(post_id, target, body, scope)
+
+        formatted_scope = ', '.join(scope[:-1])
+        if len(scope) > 1:
+            formatted_scope += ' %s ' % locales[target.language_code].and_connector + scope[-1]
+        else:
+            formatted_scope = scope[0]
+
+        await inline_query.answer([rsc.query_results.mode_for(target.language_code, post_id, body, formatted_scope),
+                                   rsc.query_results.mode_except(target.language_code, post_id, body, formatted_scope)],
+                                   cache_time = 0)
+    except Exception as e:
+        logger.error(e)
+        logger.warning('cannot handle inline query hide from ' +
+                       get_formatted_username_or_id(inline_query.from_user) + ' '
+                       'with payload: "' + inline_query.query + '"')
+
+@dp.inline_handler(lambda query: len(query.query) > 0)
+async def inline_query_spoiler(inline_query: types.InlineQuery):
+    try:
+        target = inline_query.from_user
+        body = inline_query.query
+        if len(body) > 200:
+            await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
+            return
+
+        post_id = random.randint(0, 100000000)
+        insert_post(post_id, target, body)
+        await inline_query.answer([rsc.query_results.spoiler(target.language_code, post_id, body)])
+    except Exception as e:
+        logger.error(e)
+        logger.warning('cannot handle inline query spoiler from ' +
+                       get_formatted_username_or_id(inline_query.from_user) + ' '
+                       'with payload: "' + inline_query.query + '"')
+
+@dp.inline_handler()
+async def inline_query_help(inline_query: types.InlineQuery):
+    try:
+        await inline_query.answer([], switch_pm_text = locales[inline_query.from_user.language_code].how_to_use,
+                                  switch_pm_parameter  = 'how_to_use')
+    except Exception as e:
+        logger.error(e)
+        logger.warning('cannot handle inline query help from ' +
+                       get_formatted_username_or_id(inline_query.from_user) + ' '
+                       'with payload: "' + inline_query.query + '"')
 
 @dp.callback_query_handler()
-async def callback_inline(call: types.CallbackQuery):
+async def callback_query(call: types.CallbackQuery):
     try:
         target = call.from_user
         (post_id, mode) = str(call.data).split(' ')
@@ -85,7 +177,9 @@ async def callback_inline(call: types.CallbackQuery):
         (_, author, body, scope_string, creation_time) = post
         scope = scope_string.split(' ')
         access_granted = False
-        if mode == 'for':
+        if mode == 'spoiler':
+            access_granted = True
+        elif mode == 'for':
             if target.username and target.username.lower() in scope:
                 access_granted = True
                 update_user_in_scope(post_id, target.username.lower(), target.id)
@@ -115,42 +209,9 @@ async def callback_inline(call: types.CallbackQuery):
             await call.answer(locales[target.language_code].not_allowed, True)
     except Exception as e:
         logger.error(e)
-
-@dp.inline_handler(lambda query: re.match(inline_query_regex, query.query.replace('\n', ' ')))
-async def query_hide(inline_query: types.InlineQuery):
-    try:
-        target = inline_query.from_user
-        body = scope_regex.sub('', inline_query.query)
-        if len(body) > 200:
-            await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
-            return
-
-        raw_scope = re.sub(r'(id)([0-9]+)', r'\g<2>', inline_query.query[len(body) + 1:]).split(' ')
-        marker = set()
-        scope = [not marker.add(x.casefold()) and x for x in raw_scope if x.casefold() not in marker]
-        post_id = random.randint(0, 100000000)
-        insert_post(post_id, target.id, body, scope)
-        if get_post(post_id):
-            logger.info('#' + str(post_id) + ' has been inserted by ' + get_formatted_username_or_id(target))
-        else:
-            logger.warning('#' + str(post_id) + ' cannot be inserted by ' + get_formatted_username_or_id(target))
-
-        formatted_scope = ', '.join(scope[:-1])
-        if len(scope) > 1:
-            formatted_scope += ' %s ' % locales[target.language_code].and_connector + scope[-1]
-        else:
-            formatted_scope = scope[0]
-
-        await inline_query.answer([rsc.query_results.mode_for(target.language_code, post_id, body, formatted_scope),
-                                   rsc.query_results.mode_except(target.language_code, post_id, body, formatted_scope)],
-                                   cache_time = 0)
-    except Exception as e:
-        logger.error(e)
-
-@dp.inline_handler()
-async def query_hide(inline_query: types.InlineQuery):
-    await inline_query.answer([], switch_pm_text = locales[inline_query.from_user.language_code].how_to_use,
-                                  switch_pm_parameter = 'how_to_use')
+        logger.warning('cannot handle callback query from ' +
+                       get_formatted_username_or_id(call.from_user) + ' '
+                       'with payload: "' + call.data + '"')
 
 @dp.message_handler(commands = ['start', 'help', 'info'])
 async def send_info(message: types.Message):
@@ -163,6 +224,7 @@ async def send_info(message: types.Message):
                              disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)
+        logger.warning('cannot send info to chat_id: ' + message.chat.id)
 
 @dp.my_chat_member_handler(lambda message: message.new_chat_member.status == 'member',
                            chat_type = (types.ChatType.GROUP, types.ChatType.SUPERGROUP))

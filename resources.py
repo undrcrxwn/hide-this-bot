@@ -19,7 +19,7 @@ class QueryResults:
             [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' for')]])
         message_content = types.InputTextMessageContent(self.locales[lang].for_message % scope_string)
         return types.InlineQueryResultArticle(
-            id = '1', title = self.locales[lang].for_title % scope_string,
+            id = 'for', title = self.locales[lang].for_title % scope_string,
             input_message_content = message_content,
             reply_markup = keyboard,
             description = body,
@@ -30,11 +30,22 @@ class QueryResults:
             [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' except')]])
         message_content = types.InputTextMessageContent(self.locales[lang].except_message % scope_string)
         return types.InlineQueryResultArticle(
-            id = '2', title = self.locales[lang].except_title % scope_string,
+            id = 'except', title = self.locales[lang].except_title % scope_string,
             input_message_content = message_content,
             reply_markup = keyboard,
             description = body,
             thumb_url = 'https://i.imgur.com/S6OZMHd.png')
+
+    def spoiler(self, lang: str, post_id, body):
+        keyboard = types.InlineKeyboardMarkup(inline_keyboard =
+            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' spoiler')]])
+        message_content = types.InputTextMessageContent(self.locales[lang].spoiler_message)
+        return types.InlineQueryResultArticle(
+            id = 'spoiler', title = self.locales[lang].spoiler_title,
+            input_message_content = message_content,
+            reply_markup = keyboard,
+            description = body,
+            thumb_url = 'https://i.imgur.com/mS2ir0T.png')
 
 class Keyboards:
     def info_keyboard(self):
