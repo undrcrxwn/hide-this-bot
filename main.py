@@ -74,7 +74,7 @@ def get_post(post_id: int):
 def insert_post(post_id: int, author: types.User, content: str, scope: list = None):
     result = None
     try:
-        scope_string = '' if scope is None else ' '.join(scope).lower()
+        scope_string = '' if scope is None else ' '.join(scope).replace('@', '').lower()
         result = execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
                                'VALUES (%s, %s, %s, %s, NOW()) RETURNING id',
                                (post_id, author.id, content, scope_string))
