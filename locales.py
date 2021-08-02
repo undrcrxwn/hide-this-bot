@@ -58,7 +58,7 @@ locale_it.except_message = 'Messaggio privato per tutti tranne %s.'
 locale_en.spoiler_message = 'Public spoiler message.'
 locale_ru.spoiler_message = 'Публичное сообщение под спойлером.'
 locale_uk.spoiler_message = 'Публічне повідомлення під спойлером.'
-locale_it.spoiler_message = 'Spoiler messaggio pubblico.'
+locale_it.spoiler_message = 'Messaggio contenente spoiler.'
 
 # GROUP_GREETING_MESSAGE
 locale_en.group_greeting_message = (
