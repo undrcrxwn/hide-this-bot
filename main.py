@@ -34,10 +34,7 @@ def execute_query(query, data = None):
         cursor = connection.cursor()
         cursor.execute(query, data)
         connection.commit()
-        try:
-            result = cursor.fetchall()
-        except:
-            pass
+        result = cursor.fetchall()
     except Exception as e:
         logger.error(e)
         connection.rollback()
@@ -49,10 +46,7 @@ def execute_read_query(query, data = None):
     try:
         cursor = connection.cursor()
         cursor.execute(query, data)
-        try:
-            result = cursor.fetchall()
-        except:
-            pass
+        result = cursor.fetchall()
     except Exception as e:
         logger.error(e)
     return result
