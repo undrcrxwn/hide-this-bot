@@ -20,7 +20,7 @@ class Locale():
     and_connector: str
 
 class LocalesDict:
-    def __init__(self, locales: dict[str, Locale], default_locale: Locale):
+    def __init__(self, locales, default_locale: Locale):
         self.locales = locales
         self.default_locale = default_locale
 
