@@ -3,6 +3,7 @@ import random
 import re
 import time
 from datetime import datetime
+from enum import Enum
 from threading import Thread
 
 import psycopg2
@@ -28,13 +29,14 @@ def ignore(chat_id, timeout):
     time.sleep(timeout)
     ignored_chat_ids.remove(chat_id)
 
-def execute_query(query, data = None):
+def execute_query(query, data = None, fetch_result = False):
     result = None
     try:
         cursor = connection.cursor()
         cursor.execute(query, data)
         connection.commit()
-        result = cursor.fetchall()
+        if fetch_result:
+            result = cursor.fetchall()
     except Exception as e:
         logger.error(e)
         connection.rollback()
@@ -65,21 +67,35 @@ def get_post(post_id: int):
         logger.warning('#' + str(post_id) + ' cannot be reached')
     return result
 
-def insert_post(post_id: int, author: types.User, content: str, scope: list = None):
+def get_user(user: types.User):
     result = None
     try:
-        scope_string = '' if scope is None else ' '.join(scope).replace('@', '').lower()
-        result = execute_query('INSERT INTO posts (id, author, content, scope, creation_time) '
-                               'VALUES (%s, %s, %s, %s, NOW()) RETURNING id',
-                               (post_id, author.id, content, scope_string))
+        result = execute_read_query('SELECT * FROM users WHERE id = %s', (str(user.id),))[0]
     except Exception as e:
-        logger.error(e)
-
-    if result is None:
-        logger.warning('#' + str(post_id) + ' cannot be inserted by ' + get_formatted_username_or_id(author))
-    else:
-        logger.info('#' + str(post_id) + ' has been inserted by ' + get_formatted_username_or_id(author))
+        logger.info('no user info found for ' + get_formatted_username_or_id(user))
+        result = create_empty_user(user)
     return result
+
+def create_empty_user(user: types.User):
+    result = execute_read_query('INSERT INTO users '
+                                'VALUES (%s, %s, %s, FALSE, 0, NOW(), NOW()) '
+                                'RETURNING *',
+                                (user.id, user.username, user.language_code))[0]
+    logger.info('new empty user ' + get_formatted_username_or_id(user) + ' has been created')
+    return result
+
+def insert_post(post_id: int, author: types.User, content: str, scope: list = None):
+    try:
+        scope_string = '' if scope is None else ' '.join(scope).replace('@', '').lower()
+        execute_query('INSERT INTO posts '
+                      'VALUES (%s, %s, %s, %s, NOW())',
+                      (post_id, author.id, content, scope_string))
+    except Exception as e:
+        logger.error('#' + str(post_id) + ' cannot be inserted by ' + get_formatted_username_or_id(author))
+        logger.error(e)
+        return
+    logger.info('#' + str(post_id) + ' has been inserted by ' + get_formatted_username_or_id(author))
+    return post_id
 
 def update_user_in_scope(post_id: int, username: str, user_id: int):
     try:
@@ -96,10 +112,45 @@ def update_user_in_scope(post_id: int, username: str, user_id: int):
         logger.error(e)
         logger.warning('cannot update @' +  username + ' to id: ' + str(user_id) + ' in scope #' + str(post_id))
 
+class UserInteractionType(Enum):
+    DIRECT_MESSAGE = 0
+    INLINE_QUERY = 1
+    CALLBACK_QUERY = 2
+
+def update_user(user: types.User, interaction: UserInteractionType):
+    try:
+        (_, _, _,
+         has_dialog,
+         inline_queries_count,
+         first_interaction_time,
+         last_interaction_time) = get_user(user)
+
+        query = ('UPDATE users '
+                 'SET username = %s, '
+                 'language_code = %s')
+        data = (user.username, user.language_code)
+
+        if interaction == UserInteractionType.DIRECT_MESSAGE:
+            query += ', has_dialog = %s'
+            data += (True,)
+        elif interaction == UserInteractionType.INLINE_QUERY:
+            query += ', inline_queries_count = %s'
+            data += (inline_queries_count + 1,)
+
+        query += (', last_interaction_time = NOW() '
+                  'WHERE id = %s;')
+        data += (user.id,)
+        execute_query(query, data)
+    except Exception as e:
+        logger.warning('cannot update ' +  get_formatted_username_or_id(user) + '\'s user info')
+        logger.error(e)
+
 @dp.inline_handler(lambda query: re.match(inline_query_regex, query.query.replace('\n', ' ')))
 async def inline_query_hide(inline_query: types.InlineQuery):
     try:
         target = inline_query.from_user
+        update_user(target, UserInteractionType.INLINE_QUERY)
+
         body = scope_regex.sub('', inline_query.query)
         if len(body) > 200:
             await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
@@ -130,6 +181,8 @@ async def inline_query_hide(inline_query: types.InlineQuery):
 async def inline_query_spoiler(inline_query: types.InlineQuery):
     try:
         target = inline_query.from_user
+        update_user(target, UserInteractionType.INLINE_QUERY)
+
         body = inline_query.query
         if len(body) > 200:
             await inline_query.answer([rsc.query_results.message_too_long(target.language_code)])
@@ -147,7 +200,9 @@ async def inline_query_spoiler(inline_query: types.InlineQuery):
 @dp.inline_handler()
 async def inline_query_help(inline_query: types.InlineQuery):
     try:
-        await inline_query.answer([], switch_pm_text = locales[inline_query.from_user.language_code].how_to_use,
+        target = inline_query.from_user
+        update_user(target, UserInteractionType.INLINE_QUERY)
+        await inline_query.answer([], switch_pm_text = locales[target.language_code].how_to_use,
                                   switch_pm_parameter  = 'how_to_use')
     except Exception as e:
         logger.error(e)
@@ -159,6 +214,8 @@ async def inline_query_help(inline_query: types.InlineQuery):
 async def callback_query(call: types.CallbackQuery):
     try:
         target = call.from_user
+        update_user(target, UserInteractionType.CALLBACK_QUERY)
+
         (post_id, mode) = str(call.data).split(' ')
         post = get_post(post_id)
         if post is None:
@@ -204,20 +261,22 @@ async def callback_query(call: types.CallbackQuery):
                        get_formatted_username_or_id(call.from_user) + ' '
                        'with payload: "' + call.data + '"')
 
-@dp.message_handler(commands = ['start', 'help', 'info'])
+@dp.message_handler()
 async def send_info(message: types.Message):
     try:
         if message.chat.id in ignored_chat_ids:
             return
         Thread(target = ignore, args = (message.chat.id, 1)).start()
-        await message.answer(text = locales[message.from_user.language_code].info_message,
-                             reply_markup = rsc.keyboards.info_keyboard(),
-                             disable_web_page_preview = True)
+        update_user(message.from_user, UserInteractionType.DIRECT_MESSAGE)
+        if message.get_command() not in ['start', 'help', 'info']:
+            await message.answer(text = locales[message.from_user.language_code].info_message,
+                                 reply_markup = rsc.keyboards.info_keyboard(),
+                                 disable_web_page_preview = True)
     except Exception as e:
         logger.error(e)
         logger.warning('cannot send info to chat_id: ' + message.chat.id)
 
-@dp.my_chat_member_handler(lambda message: message.new_chat_member.status == 'member',
+@dp.my_chat_member_handler(lambda message: message.new_chat_member.status == types.ChatMemberStatus.MEMBER,
                            chat_type = (types.ChatType.GROUP, types.ChatType.SUPERGROUP))
 async def send_group_greeting(message: types.ChatMemberUpdated):
     try:
@@ -240,6 +299,17 @@ if __name__ == '__main__':
                 content TEXT,
                 scope TEXT,
                 creation_time TIMESTAMP);
+                """)
+
+        execute_query("""
+            CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY,
+                username TEXT NULL,
+                language_code TEXT NULL,
+                has_dialog BOOLEAN,
+                inline_queries_count INTEGER,
+                first_interaction_time TIMESTAMP,
+                last_interaction_time TIMESTAMP);
                 """)
 
         logger.info('Start polling...')
