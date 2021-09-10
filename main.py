@@ -160,11 +160,8 @@ async def callback_query(call: types.CallbackQuery):
     try:
         target = call.from_user
         (post_id, mode) = str(call.data).split(' ')
-        try:
-            post = get_post(post_id)
-        except Exception as e:
-            logger.error(e)
-            logger.warning('#' + post_id + ' cannot be reached by ' + get_formatted_username_or_id(target))
+        post = get_post(post_id)
+        if post is None:
             await bot.answer_callback_query(call.id, text = locales[target.language_code].not_accessible, show_alert = True)
             return
 
