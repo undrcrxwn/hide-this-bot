@@ -1,5 +1,5 @@
 from datetime import datetime
-from peewee import *
+from peewee import SqliteDatabase, Model, IntegerField, TextField, BooleanField, TimestampField, ForeignKeyField
 from aiogram import types
 from utils import get_formatted_username_or_id, PostMode
 from loguru import logger
