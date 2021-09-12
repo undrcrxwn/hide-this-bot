@@ -1,6 +1,7 @@
 import random
 from aiogram import types
 from locales_dict import LocalesDict
+from models import PostMode
 
 class QueryResults:
     def __init__(self, locales: LocalesDict):
@@ -16,10 +17,11 @@ class QueryResults:
 
     def mode_for(self, lang: str, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup(inline_keyboard =
-            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' for')]])
+            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) +
+            ' ' + PostMode.parse_key(PostMode.FOR))]])
         message_content = types.InputTextMessageContent(self.locales[lang].for_message % scope_string)
         return types.InlineQueryResultArticle(
-            id = 'for', title = self.locales[lang].for_title % scope_string,
+            id = str(PostMode.FOR), title = self.locales[lang].for_title % scope_string,
             input_message_content = message_content,
             reply_markup = keyboard,
             description = body,
@@ -27,21 +29,23 @@ class QueryResults:
 
     def mode_except(self, lang: str, post_id, body, scope_string):
         keyboard = types.InlineKeyboardMarkup(inline_keyboard =
-            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' except')]])
+            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) +
+            ' ' + PostMode.parse_key(PostMode.EXCEPT))]])
         message_content = types.InputTextMessageContent(self.locales[lang].except_message % scope_string)
         return types.InlineQueryResultArticle(
-            id = 'except', title = self.locales[lang].except_title % scope_string,
+            id = str(PostMode.EXCEPT), title = self.locales[lang].except_title % scope_string,
             input_message_content = message_content,
             reply_markup = keyboard,
             description = body,
             thumb_url = 'https://i.imgur.com/S6OZMHd.png')
 
-    def spoiler(self, lang: str, post_id, body):
+    def mode_spoiler(self, lang: str, post_id, body):
         keyboard = types.InlineKeyboardMarkup(inline_keyboard =
-            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) + ' spoiler')]])
+            [[types.InlineKeyboardButton(self.locales[lang].view, callback_data = str(post_id) +
+            ' ' + PostMode.parse_key(PostMode.SPOILER))]])
         message_content = types.InputTextMessageContent(self.locales[lang].spoiler_message)
         return types.InlineQueryResultArticle(
-            id = 'spoiler', title = self.locales[lang].spoiler_title,
+            id = str(PostMode.SPOILER), title = self.locales[lang].spoiler_title,
             input_message_content = message_content,
             reply_markup = keyboard,
             description = body,
