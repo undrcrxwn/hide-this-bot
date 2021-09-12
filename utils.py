@@ -11,5 +11,6 @@ class PostMode(BaseEnum):
     FOR = 1
     EXCEPT = 2
 
-def get_formatted_username_or_id(user: types.User):
-    return 'id' + str(user.id) if user.username is None else '@' + user.username
+def get_formatted_username_or_id(user):
+    user_id = user.id if user is types.User else user.user_id
+    return 'id' + str(user_id) if user.username is None else '@' + user.username
