@@ -1,11 +1,14 @@
+import os
 from datetime import datetime
-from peewee import SqliteDatabase, Model, IntegerField, TextField, BooleanField, TimestampField, ForeignKeyField
-from aiogram import types
-from utils import get_formatted_username_or_id, PostMode
-from loguru import logger
 
-db = SqliteDatabase('hidethisbot.db')
-db.connect()
+from aiogram import types
+from loguru import logger
+from peewee import Model, IntegerField, TextField, BooleanField, TimestampField, ForeignKeyField
+from playhouse.db_url import connect
+
+from utils import get_formatted_username_or_id, PostMode
+
+db = connect(os.environ['DATABASE_URL'])
 
 class BaseModel(Model):
     class Meta:

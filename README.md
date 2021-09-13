@@ -16,8 +16,8 @@ Here is a brief guide you can follow to host your own Hide This Bot in case you 
 
 ### Environment variables
 - `API_TOKEN` – Telegram API bot token
-- `LOG_PATH` – path to the log-file
-- `DATABASE_URL` – URL of the PostgreSQL database
+- `LOG_PATH` – path to the log-file (e. g. **logs/session_{time}.log**)
+- `DATABASE_URL` – connection URL of the database (see [examples](https://www.prisma.io/docs/reference/database-reference/connection-urls))
 
 ### Telegram input template
 > @hidethisbot sample text @user1 @user2 @user3

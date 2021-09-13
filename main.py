@@ -5,15 +5,15 @@ import time
 from datetime import datetime
 from threading import Thread
 
-from models import User, Post, PostMode
 from aiogram import Bot, Dispatcher, executor, types
 from loguru import logger
 
 from locales import locales
+from models import User, Post, PostMode
 from resources import Resources
 from utils import get_formatted_username_or_id
 
-logger.add(os.environ['LOG_PATH'], level = 'DEBUG')
+logger.add(os.environ['LOG_PATH'])
 rsc = Resources(locales)
 
 inline_query_regex = re.compile(r'^.+([ \n](@\w+|id[0-9]+))+$')
@@ -180,7 +180,7 @@ async def send_info(message: types.Message):
             target.save()
     except Exception as e:
         logger.error(e)
-        logger.warning('cannot send info to chat_id=' + message.chat.id)
+        logger.warning('cannot send info to chat_id=' + str(message.chat.id))
 
 @dp.my_chat_member_handler(
     lambda message: message.new_chat_member.status == types.ChatMemberStatus.MEMBER,
