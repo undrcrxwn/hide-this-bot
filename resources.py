@@ -1,5 +1,7 @@
 import random
+
 from aiogram import types
+
 from locales_dict import LocalesDict
 from models import PostMode
 

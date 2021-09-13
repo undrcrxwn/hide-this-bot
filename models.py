@@ -3,7 +3,7 @@ from datetime import datetime
 
 from aiogram import types
 from loguru import logger
-from peewee import Model, IntegerField, TextField, BooleanField, TimestampField, ForeignKeyField
+from peewee import Model, IntegerField, CharField, BooleanField, TimestampField, ForeignKeyField
 from playhouse.db_url import connect
 
 from utils import get_formatted_username_or_id, PostMode
@@ -16,10 +16,10 @@ class BaseModel(Model):
 
 class User(BaseModel):
     user_id = IntegerField(primary_key = True)
-    username = TextField(null = True)
-    first_name = TextField()
-    last_name = TextField(null = True)
-    language_code = TextField(null = True)
+    username = CharField(null = True)
+    first_name = CharField()
+    last_name = CharField(null = True)
+    language_code = CharField(null = True)
     has_dialog = BooleanField()
     inline_queries_count = IntegerField()
     first_interaction_time = TimestampField()
@@ -65,8 +65,8 @@ class User(BaseModel):
 class Post(BaseModel):
     post_id = IntegerField(primary_key = True)
     author = ForeignKeyField(User)
-    content = TextField()
-    scope = TextField()
+    content = CharField()
+    scope = CharField()
     creation_time = TimestampField()
 
     def get_scope_mentions(self):

@@ -200,10 +200,6 @@ async def send_group_greeting(message: types.ChatMemberUpdated):
 
 if __name__ == '__main__':
     try:
-        query = User.select()
-        for user in query:
-            print(user.get_values())
-
         logger.info('Start polling...')
         executor.start_polling(dp, skip_updates = True)
     except Exception as e:
