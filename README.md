@@ -4,6 +4,7 @@
 [![](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/overview/master) 
 [![](https://img.shields.io/badge/telegram-@hidethisbot-blue)](https://t.me/hidethisbot) 
 [![](https://img.shields.io/badge/community-@hidethisbot__chat-blue)](https://t.me/hidethisbot_chat)
+[![](https://i.imgur.com/gYCmw0k.png)](#)
 
 ### How do I host it?
 Here is a brief guide you can follow to host your own Hide This Bot in case you are afraid of data leaks or for any other reason.
