@@ -31,12 +31,11 @@ def ignore(chat_id, timeout):
 def create_post(author: User, content: str, scope: set = ()):
     try:
         result = Post.create(
-            post_id = random.randint(0, 100000000),
             author = author,
             content = content,
             scope = ' '.join(scope).replace('@', ''),
             creation_time = datetime.now())
-        logger.info('#' + str(result.post_id) + ' has been created by ' + get_formatted_username_or_id(author))
+        logger.info('#' + str(result.get_id()) + ' has been created by ' + get_formatted_username_or_id(author))
         return result
     except Exception as e:
         logger.error('new post cannot be created by ' + get_formatted_username_or_id(author))
@@ -67,8 +66,8 @@ async def inline_query_hide(inline_query: types.InlineQuery):
             formatted_scope = scope[0]
 
         await inline_query.answer(
-            [rsc.query_results.mode_for(target.language_code, post.post_id, body, formatted_scope),
-             rsc.query_results.mode_except(target.language_code, post.post_id, body, formatted_scope)],
+            [rsc.query_results.mode_for(target.language_code, post.get_id(), body, formatted_scope),
+             rsc.query_results.mode_except(target.language_code, post.get_id(), body, formatted_scope)],
             cache_time = 0)
     except Exception as e:
         logger.error(e)
@@ -90,7 +89,7 @@ async def inline_query_spoiler(inline_query: types.InlineQuery):
             return
 
         post = create_post(target, body)
-        await inline_query.answer([rsc.query_results.mode_spoiler(target.language_code, post.post_id, body)])
+        await inline_query.answer([rsc.query_results.mode_spoiler(target.language_code, post.get_id(), body)])
     except Exception as e:
         logger.error(e)
         logger.warning(

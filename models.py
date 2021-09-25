@@ -63,7 +63,6 @@ class User(BaseModel):
             self.last_interaction_time)
 
 class Post(BaseModel):
-    post_id = IntegerField(primary_key = True)
     author = ForeignKeyField(User)
     content = CharField()
     scope = CharField()
