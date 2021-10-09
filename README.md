@@ -11,7 +11,7 @@ Here is a brief guide you can follow to host your own Hide This Bot in case you 
 1. Create a new bot via [Botfather](https://t.me/botfather).
 2. Make your bot inline at Bot → Bot Settings → Inline Mode → Turn inline mode on.
 3. Optionally set up your custom inline placeholder (e. g. <i>sample text @user</i>) at Bot → Bot Settings → Inline Mode → Edit inline placeholder.
-5. [Fork](https://https://github.com/undrcrxwn/hidethisbot/fork) this repo.
+5. [Fork](https://github.com/undrcrxwn/hidethisbot/fork) this repo.
 6. [Deploy](https://heroku.com/deploy?template=https://github.com/undrcrxwn/hidethisbot) it to Heroku (recomended) or some other hosting.
 7. Set up all required environment variables (aka config vars) at Heroku → Pipeline → App → Settings → Config Vars.
 
