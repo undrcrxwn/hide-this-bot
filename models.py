@@ -3,7 +3,7 @@ from datetime import datetime
 
 from aiogram import types
 from loguru import logger
-from peewee import Model, IntegerField, CharField, BooleanField, TimestampField, ForeignKeyField
+from peewee import Model, BigIntegerField, IntegerField, CharField, BooleanField, TimestampField, ForeignKeyField
 from playhouse.db_url import connect
 
 from utils import get_formatted_username_or_id, PostMode
