@@ -15,7 +15,7 @@ class BaseModel(Model):
         database = db
 
 class User(BaseModel):
-    user_id = IntegerField(primary_key = True)
+    user_id = BigIntegerField(primary_key = True)
     username = CharField(null = True)
     first_name = CharField()
     last_name = CharField(null = True)
