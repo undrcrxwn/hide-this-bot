@@ -74,23 +74,23 @@ locale_it.spoiler_message = 'Messaggio contenente spoiler.'
 locale_en.group_greeting_message = (
         '👋 Hi! My name is %s and I can help you send private messages that only certain people can view. '
         'To learn more send /start@%s and feel free to ask for help in our '
-        '<a href="t.me/hidethisbot_chat">public community</a> if you\'ve got any questions.')
+        '<a href="t.me/radzinsky_chat">public community</a> if you\'ve got any questions.')
 locale_ru.group_greeting_message = (
         '👋 Привет! Меня зовут %s и я могу помочь вам отправлять сообщения, которые смогут прочитать только '
         'определённый круг лиц. Чтобы узнать больше отправьте команду /start@%s и не стесняйтесь просить о помощи '
-        'в нашем <a href="t.me/hidethisbot_chat">публичном чате</a>, если у вас появятся какие-либо вопросы.')
+        'в нашем <a href="t.me/radzinsky_chat">публичном чате</a>, если у вас появятся какие-либо вопросы.')
 locale_uk.group_greeting_message = (
         '👋 Привіт! Мене звуть %s і я можу допомогти вам відправляти повідомлення, які зможуть прочитати тільки '
         'певне коло осіб. Щоб дізнатися більше відправте команду /start@%s і не соромтеся просити про допомогу '
-        'в нашому <a href="t.me/hidethisbot_chat">публічному чаті</a>, якщо у вас виникнуть будь-які питання.')
+        'в нашому <a href="t.me/radzinsky_chat">публічному чаті</a>, якщо у вас виникнуть будь-які питання.')
 locale_de.group_greeting_message = (
         '👋 Hi! Mein Name ist %s und ich kann dir helfen, private Nachrichten zu verschicken, die nur bestimmte Personen sehen können. '
         'Um zu sehen, wie das geht, sende einfach /start@%s! Fühle dich frei, bei Fragen, in unserer '
-        '<a href="t.me/hidethisbot_chat">Support Gruppe</a> zu fragen.')
+        '<a href="t.me/radzinsky_chat">Support Gruppe</a> zu fragen.')
 locale_it.group_greeting_message = (
         '👋 Ciao! Il mio nome è %s E posso aiutarti ad inviare messaggi privati che solo alcuni possono vedere. '
         'per sapere di più invia /start@%s e sentiti libero di chiedere aiuto '
-        '<a href="t.me/hidethisbot_chat">gruppo pubblico</a> se hai domande.')
+        '<a href="t.me/radzinsky_chat">gruppo pubblico</a> se hai domande.')
 
 # INFO_MESSAGE
 locale_en.info_message = (
