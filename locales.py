@@ -96,27 +96,27 @@ locale_it.group_greeting_message = (
 locale_en.info_message = (
         'If you still have questions after reading the article, you can contact support or simply ask '
         'for help in our public chat at any time you want.\n\n'
-        '👥 Public chat: @hidethisbot_chat\n'
+        '👥 Public chat: @radzinsky_chat\n'
         '⚙ Support: @undrcrxwn')
 locale_ru.info_message = (
         'Если у вас остались вопросы после прочтения статьи, вы можете в любое время обратиться в '
         'поддержку или попросить о помощи в нашем публичном чате.\n\n'
-        '👥 Публичный чат: @hidethisbot_chat\n'
+        '👥 Публичный чат: @radzinsky_chat\n'
         '⚙ Поддержка: @undrcrxwn')
 locale_uk.info_message = (
         'Якщо у вас залишилися питання після прочитання статті, ви можете в будь-який час звернутися в службу '
         'підтримки або попросити про допомогу в нашому публічному чаті.\n\n'
-        '👥 Публічний чат: @hidethisbot_chat\n'
+        '👥 Публічний чат: @radzinsky_chat\n'
         '⚙ Підтримка: @undrcrxwn')
 locale_de.info_message = (
         'Wenn du nach dem Lesen des Artikels noch Fragen hast, kannst du den Support kontaktieren oder einfach '
         'in unserem öffentlichen Chat um Hilfe bitten, wann immer du willst.\n\n'
-        '👥 öffentlichen Chat: @hidethisbot_chat\n'
+        '👥 öffentlichen Chat: @radzinsky_chat\n'
         '⚙ Hilfe: @undrcrxwn')
 locale_it.info_message = (
          'Se hai ancora domande dopo aver letto questo articolo, puoi contattare il supporto nella nostra '
          'chat pubblica quando vuoi.\n\n'
-         '👥 Gruppo pubblico: @hidethisbot_chat\n'
+         '👥 Gruppo pubblico: @radzinsky_chat\n'
          '⚙ Supporto: @undrcrxwn')
 
 # HOW_TO_USE
