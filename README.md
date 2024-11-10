@@ -1,7 +1,7 @@
 # Hide This Bot
 [Hide This Bot](https://t.me/hidethisbot) is an inline Telegram bot to keep your private messages hidden from prying eyes.
 
-[![](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/hidethisbot/overview/master) 
+[![](https://www.codefactor.io/repository/github/undrcrxwn/hide-this-bot/badge/master)](https://www.codefactor.io/repository/github/undrcrxwn/hide-this-bot/overview/master) 
 [![](https://img.shields.io/badge/telegram-@hidethisbot-blue)](https://t.me/hidethisbot) 
 [![](https://img.shields.io/badge/community-@hidethisbot__chat-blue)](https://t.me/hidethisbot_chat)
 [![](https://i.imgur.com/gYCmw0k.png)](#)
